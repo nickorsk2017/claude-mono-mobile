@@ -1,0 +1,23 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [{ "name": "next" }],
+    "paths": {
+      "@common/types/*": ["../_common/types/*"],
+      "@common/stores/*": ["../_common/stores/*"],
+      "@common/hooks": ["../_common/hooks/index.ts"],
+      "@common/hooks/*": ["../_common/hooks/*"],
+      "@common/ui-kit/*": ["../_common/ui-kit/src/*"],
+      "@common/services": ["../_common/services/index.ts"],
+      "@common/services/*": ["../_common/services/*"],
+      "@common/utils/*": ["../_common/utils/*"],
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
