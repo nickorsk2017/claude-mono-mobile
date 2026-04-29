@@ -14,30 +14,75 @@ services:
     environment:
       - NODE_ENV=production
     depends_on:
-      backend:
+      gateway:
         condition: service_healthy
     restart: unless-stopped
     networks:
       - internal
 
-  backend:
+  gateway:
     build:
       context: .
-      dockerfile: backend/Dockerfile
-    image: claude-arch/backend:local
-    container_name: claude-arch-backend
+      dockerfile: backend/gateway/Dockerfile
+    image: claude-arch/gateway:local
+    container_name: claude-arch-gateway
     ports:
       - "4000:4000"
     env_file:
       - ./_common/.env
     environment:
       - NODE_ENV=production
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health"]
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - internal
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: backend/auth-service/Dockerfile
+    image: claude-arch/auth-service:local
+    container_name: claude-arch-auth-service
+    env_file:
+      - ./_common/.env
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - internal
+
+  user-service:
+    build:
+      context: .
+      dockerfile: backend/user-service/Dockerfile
+    image: claude-arch/user-service:local
+    container_name: claude-arch-user-service
+    env_file:
+      - ./_common/.env
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4002/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     restart: unless-stopped
     networks:
       - internal
@@ -55,7 +100,7 @@ services:
     environment:
       - NODE_ENV=production
     depends_on:
-      backend:
+      gateway:
         condition: service_healthy
     restart: unless-stopped
     networks:

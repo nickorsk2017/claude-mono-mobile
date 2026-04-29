@@ -24,7 +24,7 @@ Each subdirectory has its own `CLAUDE.md` — read both.
 │   ├── web/                   # Next.js + React + Tailwind
 │   ├── mobile/               # Ionic (latest) + React
 │   └── _common/               # hooks, services, stores, types, ui-kit, utils
-├── backend/                   # NestJS + Supabase
+├── backend/                   # NestJS microservices (gateway, auth-service, user-service)
 ├── mcp/                       # AI Agent via Model Context Protocol
 ├── _common/                   # Server-side only: migrations/ + .env
 ├── docker-compose.yml
@@ -174,7 +174,9 @@ RUN pnpm install --frozen-lockfile
 
 - Each service owns its `Dockerfile`:
   - `frontend/web/Dockerfile` (build context: `./frontend`)
-  - `backend/Dockerfile` (build context: `.`)
+  - `backend/gateway/Dockerfile` (build context: `.`)
+  - `backend/auth-service/Dockerfile` (build context: `.`)
+  - `backend/user-service/Dockerfile` (build context: `.`)
   - `mcp/Dockerfile` (build context: `.`)
 - `docker-compose.yml` at repo root is the only way to run all services together
 - Multi-stage builds required: `dependencies → builder → runner`
