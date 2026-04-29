@@ -6,6 +6,7 @@ const nextConfiguration: NextConfig = {
     '@common/ui-kit',
     '@common/stores',
     '@common/hooks',
+    '@common/services',
     '@common/utils',
   ],
 };
