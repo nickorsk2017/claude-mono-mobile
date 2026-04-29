@@ -3,7 +3,6 @@
 import React from 'react';
 import { TextInput } from '@common/ui-kit/molecules/TextInput/TextInput';
 import { PasswordInput } from '@common/ui-kit/molecules/PasswordInput/PasswordInput';
-import { softCalmTheme } from '@common/ui-kit/theme';
 
 interface AuthSignUpFieldsProps {
   formValues: Entity.SignUpFormValues;
@@ -25,7 +24,7 @@ export const AuthSignUpFields = React.memo(function AuthSignUpFields({
   onConfirmPasswordChange,
 }: AuthSignUpFieldsProps) {
   return (
-    <>
+    <div className="flex flex-col gap-3">
       <TextInput
         value={formValues.displayName}
         onChangeText={onDisplayNameChange}
@@ -36,7 +35,6 @@ export const AuthSignUpFields = React.memo(function AuthSignUpFields({
         errorMessage={validationErrors.displayName}
         isDisabled={isDisabled}
       />
-      <div style={{ height: softCalmTheme.spacing.small }} />
       <TextInput
         value={formValues.emailAddress}
         onChangeText={onEmailChange}
@@ -48,7 +46,6 @@ export const AuthSignUpFields = React.memo(function AuthSignUpFields({
         errorMessage={validationErrors.emailAddress}
         isDisabled={isDisabled}
       />
-      <div style={{ height: softCalmTheme.spacing.small }} />
       <PasswordInput
         value={formValues.password}
         onChangeText={onPasswordChange}
@@ -57,7 +54,6 @@ export const AuthSignUpFields = React.memo(function AuthSignUpFields({
         errorMessage={validationErrors.password}
         isDisabled={isDisabled}
       />
-      <div style={{ height: softCalmTheme.spacing.small }} />
       <PasswordInput
         value={formValues.confirmPassword}
         onChangeText={onConfirmPasswordChange}
@@ -66,6 +62,6 @@ export const AuthSignUpFields = React.memo(function AuthSignUpFields({
         errorMessage={validationErrors.confirmPassword}
         isDisabled={isDisabled}
       />
-    </>
+    </div>
   );
 });

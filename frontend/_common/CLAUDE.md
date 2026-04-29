@@ -135,6 +135,23 @@ ui-kit/src/
 └── organisms/   # Complex sections: NavigationBar, UserList
 ```
 
+### Styling — inline styles only (cross-platform requirement)
+
+`ui-kit` components **must** use inline styles via `softCalmTheme` tokens — never Tailwind.
+
+**Why:** The ui-kit is consumed by both `frontend/web/` (Tailwind) and `frontend/mobile/` (Ionic CSS). Using Tailwind in the ui-kit would break mobile rendering.
+
+```tsx
+// ✅ Correct — inline styles with theme tokens
+import { softCalmTheme } from '../../theme';
+<div style={{ backgroundColor: softCalmTheme.colors.surface, borderRadius: softCalmTheme.borderRadius.medium }}>
+
+// ❌ Wrong — Tailwind classes inside ui-kit
+<div className="bg-white rounded-xl">
+```
+
+Platform-specific components (`frontend/web/components/`, `frontend/mobile/src/`) use their platform's own CSS system and must NOT import `softCalmTheme` directly.
+
 ### Component contract
 
 Every component must:

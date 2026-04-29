@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useCallback, useMemo, CSSProperties } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useAuthentication } from '@common/hooks';
-import { softCalmTheme as theme } from '@common/ui-kit/theme';
 import { Button } from '@common/ui-kit/atoms/Button/Button';
 import { Icon } from '@common/ui-kit/atoms/Icon/Icon';
 import { signOut, getActiveSession } from '@common/services';
@@ -27,77 +26,33 @@ export const DashboardView = React.memo(function DashboardView({
 
   const handleSignOut = useCallback(() => logout(), [logout]);
 
-  const pageStyle = useMemo<CSSProperties>(
-    () => ({
-      minHeight: '100vh',
-      backgroundColor: theme.colors.background,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: theme.spacing.medium,
-    }),
-    [],
-  );
-
-  const cardStyle = useMemo<CSSProperties>(
-    () => ({
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.borderRadius.extraLarge,
-      boxShadow: theme.shadows.lifted,
-      padding: theme.spacing.extraLarge,
-      width: '100%',
-      maxWidth: '420px',
-      textAlign: 'center',
-    }),
-    [],
-  );
-
-  const greetingStyle = useMemo<CSSProperties>(
-    () => ({
-      fontFamily: theme.typography.fontFamily,
-      fontSize: theme.typography.fontSizes.extraLarge,
-      fontWeight: theme.typography.fontWeights.bold,
-      color: theme.colors.textPrimary,
-      margin: `${theme.spacing.medium} 0 ${theme.spacing.small}`,
-    }),
-    [],
-  );
-
-  const emailStyle = useMemo<CSSProperties>(
-    () => ({
-      fontFamily: theme.typography.fontFamily,
-      fontSize: theme.typography.fontSizes.medium,
-      color: theme.colors.primary,
-      fontWeight: theme.typography.fontWeights.medium,
-      marginBottom: theme.spacing.extraLarge,
-    }),
-    [],
-  );
-
   return (
-    <div style={pageStyle}>
-      <div style={cardStyle}>
-        <Icon name="check" size={56} color={theme.colors.success} />
-        <h1 style={greetingStyle}>Hello, World!</h1>
-        <p style={emailStyle}>{currentUser.email}</p>
+    <div className="min-h-screen bg-calm-background flex items-center justify-center p-4">
+      <div className="bg-calm-surface rounded-3xl shadow-lifted w-full max-w-[420px] p-8 text-center">
+        <Icon name="check" size={56} color="#6EE7B7" />
+
+        <h1 className="text-3xl font-bold text-calm-text mt-4 mb-2">
+          Hello, World!
+        </h1>
+
+        <p className="text-medium font-medium text-calm-primary mb-2">
+          {currentUser.email}
+        </p>
+
         {currentUser.displayName && (
-          <p
-            style={{
-              fontFamily: theme.typography.fontFamily,
-              fontSize: theme.typography.fontSizes.body,
-              color: theme.colors.textSecondary,
-              marginBottom: theme.spacing.large,
-            }}
-          >
+          <p className="text-body text-calm-muted mb-6">
             {currentUser.displayName}
           </p>
         )}
-        <Button
-          label="Sign Out"
-          onPress={handleSignOut}
-          variant="outline"
-          isLoading={isAuthenticating}
-        />
+
+        <div className="mt-6">
+          <Button
+            label="Sign Out"
+            onPress={handleSignOut}
+            variant="outline"
+            isLoading={isAuthenticating}
+          />
+        </div>
       </div>
     </div>
   );

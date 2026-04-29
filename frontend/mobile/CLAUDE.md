@@ -46,6 +46,40 @@ Zustand stores are global — React Context is not needed and must not be used.
 
 ---
 
+## Rule — Styling (Tailwind CSS)
+
+**All layout and spacing in `frontend/mobile/` must use Tailwind CSS utility classes.**
+
+Tailwind is configured in `vite.config.ts` via the Tailwind PostCSS plugin and `tailwind.config.ts` (to be created in `frontend/mobile/`). Import the generated stylesheet in `src/main.tsx`.
+
+### With Ionic
+
+Use Tailwind for layout, spacing, and typography applied to wrapper `div`/`section` elements. Use Ionic's CSS custom properties (`--background`, `--color`, etc.) on Ionic components where Tailwind can't reach internal shadow DOM:
+
+```tsx
+// ✅ Correct — Tailwind on wrappers, Ionic CSS vars on Ionic components
+<IonContent style={{ '--background': 'transparent' }}>
+  <div className="flex flex-col gap-4 p-4">
+    <IonCard className="rounded-2xl shadow-soft">
+      <IonCardContent>
+        <TextInput ... />
+      </IonCardContent>
+    </IonCard>
+  </div>
+</IonContent>
+
+// ❌ Wrong — inline styles on non-Ionic elements, no Tailwind
+<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+```
+
+### Banned in mobile components
+
+- Importing `softCalmTheme` for layout/spacing (use Tailwind `calm-*` classes)
+- Inline `style` props on non-Ionic elements
+- Hardcoded hex values in `className` (`text-[#7C9CF5]`) — add to `tailwind.config.ts` instead
+
+---
+
 ## Rule — Ionic Wrapping
 
 Every `@common/ui-kit` list element rendered in a mobile page **must** be wrapped in `IonCard`.
@@ -111,3 +145,5 @@ Mandatory in every component:
 - [ ] No component calls `fetch` or imports from `@common/services` directly
 - [ ] No `createContext` or `useContext` — use `@common/stores` instead
 - [ ] Service clients are injected into hooks from the component boundary
+- [ ] **Zero inline `style` props** on non-Ionic elements — use Tailwind classes
+- [ ] **Zero `softCalmTheme` imports** for layout/spacing — use `calm-*` Tailwind classes

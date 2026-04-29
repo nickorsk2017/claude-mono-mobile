@@ -3,7 +3,6 @@
 import React from 'react';
 import { TextInput } from '@common/ui-kit/molecules/TextInput/TextInput';
 import { PasswordInput } from '@common/ui-kit/molecules/PasswordInput/PasswordInput';
-import { softCalmTheme } from '@common/ui-kit/theme';
 
 interface AuthSignInFieldsProps {
   emailAddress: string;
@@ -23,7 +22,7 @@ export const AuthSignInFields = React.memo(function AuthSignInFields({
   onPasswordChange,
 }: AuthSignInFieldsProps) {
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <TextInput
         value={emailAddress}
         onChangeText={onEmailChange}
@@ -35,7 +34,6 @@ export const AuthSignInFields = React.memo(function AuthSignInFields({
         errorMessage={validationErrors.emailAddress}
         isDisabled={isDisabled}
       />
-      <div style={{ height: softCalmTheme.spacing.medium }} />
       <PasswordInput
         value={password}
         onChangeText={onPasswordChange}
@@ -44,6 +42,6 @@ export const AuthSignInFields = React.memo(function AuthSignInFields({
         errorMessage={validationErrors.password}
         isDisabled={isDisabled}
       />
-    </>
+    </div>
   );
 });

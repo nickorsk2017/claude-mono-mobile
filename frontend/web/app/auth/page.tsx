@@ -4,7 +4,6 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthenticationStore } from '@common/stores/use-authentication-store';
 import { AuthForm } from '../../components/AuthForm';
-import { softCalmTheme } from '@common/ui-kit/theme';
 
 export default function AuthPage() {
   const router = useRouter();
@@ -19,16 +18,7 @@ export default function AuthPage() {
   if (currentUser) return null;
 
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: softCalmTheme.colors.background,
-        padding: softCalmTheme.spacing.medium,
-      }}
-    >
+    <main className="min-h-screen flex items-center justify-center bg-calm-background p-4">
       <AuthForm />
     </main>
   );
