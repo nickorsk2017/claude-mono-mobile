@@ -6,11 +6,11 @@ type: project
 
 This project is a full monorepo with the following service layout:
 
-- `/web` — Next.js + React + Tailwind + Zustand + Supabase
-- `/mobile` — Ionic (latest) + React
+- `/frontend/web` — Next.js + React + Tailwind + Zustand + Supabase
+- `/frontend/mobile` — Ionic (latest) + React
 - `/backend` — NestJS + Supabase
 - `/mcp` — MCP AI Agent logic
-- `/_common` — shared code: ui-kit, stores, types, utils, migrations, .env
+- `/frontend/_common` — shared code: ui-kit, stores, types, utils, migrations, .env
 
 **Why:** Architect-level scaffold defined in one session; rules encoded in CLAUDE.md.
 
