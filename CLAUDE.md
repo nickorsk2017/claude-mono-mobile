@@ -66,12 +66,8 @@ Two permanent zones. Files must never cross zone boundaries.
 |---|---|
 | `const v = ...` | `const currentValue = ...` |
 | `map((t) => ...)` | `map((transaction) => ...)` |
-| `for (let i = ...)` | `for (let index = ...)` |
 | `catch (e)` | `catch (error)` |
-| `fn`, `cb`, `res` | `handler`, `callback`, `response` |
-| `utils/auth.ts` | `utils/authentication.ts` |
-
-- Files: `kebab-case`. React components: `PascalCase`. Folders: `kebab-case`.
+| `fn`, `cb`, `res` | `handler`, `callback`, `response`
 
 ---
 

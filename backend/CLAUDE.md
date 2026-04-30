@@ -1,99 +1,113 @@
-# CLAUDE.md — Backend Microservices
+# CLAUDE.md — Backend
 
-NestJS microservices architecture. Single public entry point via Gateway; internal services are isolated from direct external traffic.
+NestJS monolithic API. Single publicly-exposed service on port 4000 handles all routing, authentication, and business logic.
 
 ---
 
-## Services & Ports
+## Service
 
-| Service | Internal Port | Publicly Exposed | Purpose |
+| Service | Port | Publicly Exposed | Purpose |
 |---|---|---|---|
-| `gateway` | 4000 | Yes (→ 4000) | Routing, CORS, Supabase JWT guard |
-| `auth-service` | 4001 | No | Sign-in, sign-up, sign-out via Supabase Auth |
-| `user-service` | 4002 | No | User profile CRUD via Supabase DB |
+| `api` | 4000 | Yes (→ 4000) | Authentication, user profile, all business logic |
 
 ---
 
-## Communication Flow
+## Rule B1 — Module Ownership
 
+Each domain lives in its own directory under `src/` with exactly four files: module, controller, service, types.
+
+| File | Rule |
+|---|---|
+| `<domain>.module.ts` | Declares imports, providers, controllers, exports |
+| `<domain>.controller.ts` | HTTP bindings only — no business logic |
+| `<domain>.service.ts` | All business logic and database calls |
+| `<domain>.types.ts` | Local-only types; shared types go to `frontend/_common/types/` |
+
+Never put business logic in a controller. Never put HTTP concerns in a service.
+
+---
+
+## Rule B2 — Authentication Guard
+
+`SupabaseAuthenticationGuard` must be applied with `@UseGuards()` — never globally registered on the app.
+
+- **Public routes** (no guard): `POST /auth/sign-in`, `POST /auth/sign-up`
+- **Protected routes** (`@UseGuards(SupabaseAuthenticationGuard)`): all other endpoints
+
+The guard validates the JWT using the admin client, then injects `x-user-id` and `x-user-email` into the request headers. Controllers on protected routes read the caller's identity via `@Headers('x-user-id')` — never re-validate the token inside a service.
+
+To guard a whole controller: `@UseGuards(SupabaseAuthenticationGuard)` on the class.
+To guard a single method: `@UseGuards(SupabaseAuthenticationGuard)` on the method.
+
+---
+
+## Rule B3 — Supabase Client Usage
+
+`SupabaseService` exposes two clients. Use the correct one for each operation:
+
+| Client | Getter | Key | Use For |
+|---|---|---|---|
+| Public | `supabaseService.authClient` | `SUPABASE_PUBLISHABLE_KEY` | User-facing auth (sign-in, sign-up, sign-out) |
+| Admin | `supabaseService.adminClient` | `SUPABASE_SECRET_KEY` | JWT validation, DB queries that bypass RLS |
+
+Never instantiate a Supabase client directly — always inject `SupabaseService`.
+
+---
+
+## Rule B4 — Response Envelope
+
+Every endpoint must return `ServiceResponse<T>` using the builders in `src/response/response.builder.ts`.
+
+```typescript
+return buildSuccessResponse(data);      // { success: true, data, error: null }
+return buildErrorResponse('message');   // { success: false, data: null, error: 'message' }
 ```
-Web / Mobile
-    │
-    ▼  HTTP :4000
-┌──────────────────────────────┐
-│           Gateway            │
-│  SupabaseAuthenticationGuard │  validates JWT, injects x-user-id header
-└──────┬──────────────┬────────┘
-       │              │  HTTP (Docker internal network only)
-       ▼              ▼
- auth-service    user-service
-   :4001            :4002
-```
 
-**Public routes** — no JWT required:
-- `POST /auth/sign-in`
-- `POST /auth/sign-up`
+Never return raw objects. Never throw HTTP exceptions from services — return an error response instead.
 
-**Protected routes** — valid Supabase JWT required:
-- `POST /auth/sign-out`
-- `GET  /users/me`
-- `PATCH /users/me`
+---
+
+## Routes
+
+**Public** — no JWT required:
+
+| Method | Path |
+|---|---|
+| `GET` | `/health` |
+| `POST` | `/auth/sign-in` |
+| `POST` | `/auth/sign-up` |
+
+**Protected** — valid Supabase JWT required:
+
+| Method | Path |
+|---|---|
+| `POST` | `/auth/sign-out` |
+| `GET` | `/users/me` |
+| `PATCH` | `/users/me` |
 
 ---
 
 ## Request Lifecycle
 
-1. Client sends request with `Authorization: Bearer <jwt>` (protected routes).
-2. Gateway receives on port 4000.
-3. `SupabaseAuthenticationGuard` calls `supabase.auth.getUser(token)` using the service role key.
-4. On success, guard injects `x-user-id` and `x-user-email` headers into the forwarded request.
-5. `ProxyService` strips the original `Authorization` header and forwards only safe headers.
-6. Internal service processes the request and returns `{ success, data, error }`.
-7. Gateway returns the internal service's response to the client (HTTP 200; errors carried in body).
-
----
-
-## Standard Response Envelope
-
-Every endpoint returns:
-
-```typescript
-{
-  success: boolean;
-  data: T | null;
-  error: string | null;
-}
-```
-
----
-
-## Supabase Client Strategy
-
-| Service | Key Used | Reason |
-|---|---|---|
-| `gateway` | `SUPABASE_SERVICE_ROLE_KEY` | `getUser()` requires elevated access |
-| `auth-service` | `SUPABASE_ANON_KEY` | Auth operations use the public client |
-| `user-service` | `SUPABASE_SERVICE_ROLE_KEY` | DB queries bypass RLS; user ID trusted from gateway |
+1. Client sends request to `:4000`.
+2. `SupabaseAuthenticationGuard` (on protected routes) validates `Authorization: Bearer <jwt>` using the admin client.
+3. Guard injects `x-user-id` and `x-user-email` into the request headers.
+4. Controller reads those headers and delegates to the service.
+5. Service returns `ServiceResponse<T>` via response builder.
 
 ---
 
 ## Environment Variables
 
-Loaded from `/_common/.env` via Docker `env_file`. For local dev, copy `_common/.env.example` → `_common/.env`.
+Loaded from `/_common/.env` via Docker `env_file`. Copy `_common/.env.example` → `_common/.env` for local dev.
 
 ```
 SUPABASE_URL=...
-SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
+SUPABASE_PUBLISHABLE_KEY=...
+SUPABASE_SECRET_KEY=...
 GATEWAY_PORT=4000
 GATEWAY_CORS_ORIGIN=http://localhost:3000
-AUTH_SERVICE_PORT=4001
-AUTH_SERVICE_URL=http://auth-service:4001
-USER_SERVICE_PORT=4002
-USER_SERVICE_URL=http://user-service:4002
 ```
-
-For local dev, set `AUTH_SERVICE_URL=http://localhost:4001` and `USER_SERVICE_URL=http://localhost:4002`.
 
 ---
 
@@ -102,36 +116,31 @@ For local dev, set `AUTH_SERVICE_URL=http://localhost:4001` and `USER_SERVICE_UR
 ### First-time setup (generates pnpm-lock.yaml — commit it)
 
 ```bash
-cd backend/gateway      && pnpm install
-cd backend/auth-service && pnpm install
-cd backend/user-service && pnpm install
+cd backend/app && pnpm install
 ```
 
-### Run a service locally
+### Run locally
 
 ```bash
-cd backend/gateway      && pnpm dev   # :4000
-cd backend/auth-service && pnpm dev   # :4001
-cd backend/user-service && pnpm dev   # :4002
+cd backend/app && pnpm dev   # :4000
 ```
 
-### Run all backend services via Docker Compose
+### Run via Docker Compose
 
 ```bash
-docker compose up --build gateway auth-service user-service
+docker compose up --build api
 ```
 
 ---
 
-## Adding a New Microservice
+## Adding a New Domain
 
-1. Create `backend/<name>-service/` with `package.json`, `tsconfig.json`, `Dockerfile`, `src/`.
-2. Follow the `auth-service` structure: `health/`, `supabase/`, `response/`, domain module.
-3. Add new proxy controller in `backend/gateway/src/proxy/`.
-4. Register the new controller in `backend/gateway/src/proxy/proxy.module.ts`.
-5. Add service to `docker-compose.yml` with a `healthcheck` block. Do not expose internal port.
+1. Create `backend/app/src/<domain>/` with the four standard files.
+2. Import `SupabaseModule` in the domain module.
+3. Import `AuthenticationModule` if any routes need the guard (it exports `SupabaseAuthenticationGuard`).
+4. Apply `@UseGuards(SupabaseAuthenticationGuard)` on protected controllers or methods.
+5. Register the new module in `src/app.module.ts` imports.
 6. Document new env vars in `_common/.env.example` and this file.
-7. Run `pnpm install` in the new service directory and commit `pnpm-lock.yaml`.
 
 ---
 
@@ -139,36 +148,17 @@ docker compose up --build gateway auth-service user-service
 
 ```
 backend/
-├── gateway/
-│   ├── Dockerfile
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── src/
-│       ├── main.ts
-│       ├── app.module.ts
-│       ├── health/               GET /health
-│       ├── authentication/       SupabaseAuthenticationGuard
-│       └── proxy/                ProxyService, auth & user proxy controllers
-├── auth-service/
-│   ├── Dockerfile
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── src/
-│       ├── main.ts
-│       ├── app.module.ts
-│       ├── health/               GET /health
-│       ├── supabase/             SupabaseService (anon key)
-│       ├── response/             response.builder.ts
-│       └── authentication/       sign-in, sign-up, sign-out
-└── user-service/
+└── app/
     ├── Dockerfile
     ├── package.json
+    ├── pnpm-lock.yaml
     ├── tsconfig.json
     └── src/
         ├── main.ts
         ├── app.module.ts
         ├── health/               GET /health
-        ├── supabase/             SupabaseService (service role key)
+        ├── supabase/             SupabaseService (authClient + adminClient)
         ├── response/             response.builder.ts
+        ├── authentication/       sign-in, sign-up, sign-out, SupabaseAuthenticationGuard
         └── user/                 GET /users/me, PATCH /users/me
 ```

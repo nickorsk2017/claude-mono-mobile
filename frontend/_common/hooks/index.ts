@@ -1,3 +1,2 @@
-export { useApiFetch } from './use-api-fetch';
-export { useAuthentication } from './use-authentication';
-export { useSignUp } from './use-sign-up';
+export { useAuthentication } from './useAuth';
+export { useSignUp } from './useSignUp';

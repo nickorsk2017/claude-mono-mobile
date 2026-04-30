@@ -1,20 +1,5 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthenticationStore } from '@common/stores/use-authentication-store';
+import { redirect } from 'next/navigation';
 
 export default function RootPage() {
-  const router = useRouter();
-  const currentUser = useAuthenticationStore((state) => state.currentUser);
-
-  useEffect(() => {
-    if (currentUser) {
-      router.replace('/dashboard');
-    } else {
-      router.replace('/auth');
-    }
-  }, [currentUser, router]);
-
-  return null;
+  redirect('/dashboard');
 }

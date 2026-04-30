@@ -12,14 +12,10 @@
       "@common/stores/*": ["./_common/stores/*"],
       "@common/hooks": ["./_common/hooks/index.ts"],
       "@common/hooks/*": ["./_common/hooks/*"],
-      "@common/ui-kit/*": ["./_common/ui-kit/src/*"],
       "@common/services": ["./_common/services/index.ts"],
       "@common/services/*": ["./_common/services/*"],
-      "@common/utils/*": ["./_common/utils/*"]
+      "@common/utils/*": ["./_common/utils/*"],
+      "@common/schemas/*": ["./_common/schemas/*"]
     }
-  },
-  "references": [
-    { "path": "./web" },
-    { "path": "./mobile" }
-  ]
+  }
 }

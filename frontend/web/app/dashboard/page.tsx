@@ -1,21 +1,8 @@
-'use client';
+import { getServerUser } from '@/shared/lib/getServerUser';
+import { DashboardView } from '@/shared/features/dashboard/components/DashboardView';
 
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthenticationStore } from '@common/stores/use-authentication-store';
-import { DashboardView } from '../../components/DashboardView';
+export default async function DashboardPage() {
+  const user = await getServerUser();
 
-export default function DashboardPage() {
-  const router = useRouter();
-  const currentUser = useAuthenticationStore((state) => state.currentUser);
-
-  useEffect(() => {
-    if (!currentUser) {
-      router.replace('/auth');
-    }
-  }, [currentUser, router]);
-
-  if (!currentUser) return null;
-
-  return <DashboardView currentUser={currentUser} />;
+  return <DashboardView user={user!} />;
 }

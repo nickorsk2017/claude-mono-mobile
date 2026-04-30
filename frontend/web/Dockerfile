@@ -8,17 +8,18 @@ RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
 # ─── Dependencies ────────────────────────────────────────────────────────────
 FROM base AS dependencies
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml .npmrc* ./
 COPY web/package.json ./web/
-COPY _common/ui-kit/package.json ./_common/ui-kit/
-COPY _common/stores/package.json ./_common/stores/
 COPY _common/hooks/package.json ./_common/hooks/
+COPY _common/schemas/package.json ./_common/schemas/
 COPY _common/services/package.json ./_common/services/
+COPY _common/stores/package.json ./_common/stores/
 COPY _common/utils/package.json ./_common/utils/
-RUN pnpm install --frozen-lockfile --filter web...
+RUN pnpm install --frozen-lockfile --filter web... --prod=false
 
 # ─── Builder ─────────────────────────────────────────────────────────────────
 FROM dependencies AS builder
+COPY tsconfig.json ./tsconfig.json
 COPY _common/ ./_common/
 COPY web/ ./web/
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -35,7 +36,6 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/web/.next/standalone ./
 COPY --from=builder /app/web/.next/static ./web/.next/static
-COPY --from=builder /app/web/public ./web/public
 
 USER nextjs
 EXPOSE 3000
