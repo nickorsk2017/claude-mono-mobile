@@ -24,8 +24,7 @@ const tailwindConfiguration: Config = {
       colors: {
         calm: calmColorPalette,
       },
-      boxShadow: tailwindBoxShadowTokens,
-      fontSize: tailwindFontSizeTokens,
+      boxShadow: tailwindBoxShadowTokens
     },
   },
   plugins: [],

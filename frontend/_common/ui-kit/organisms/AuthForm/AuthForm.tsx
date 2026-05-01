@@ -3,7 +3,7 @@
 import React, { useCallback, useState } from 'react';
 import { AuthSignInFields } from './components/AuthSignInFields';
 import { AuthSignUpFields } from './components/AuthSignUpFields';
-import { Button } from '@common/ui-kit';
+import { Button } from '../../atoms/Button/Button';
 
 type AuthMode = 'sign-in' | 'sign-up';
 

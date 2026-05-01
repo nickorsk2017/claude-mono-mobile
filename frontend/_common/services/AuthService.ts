@@ -11,7 +11,6 @@ let activeAccessToken: string | null = null;
 function resolveBackendUrl(): string | undefined {
   return (
     process.env.NEXT_PUBLIC_BACKEND_URL ??
-    process.env.EXPO_PUBLIC_BACKEND_URL ??
     process.env.BACKEND_URL ??
     'http://localhost:4000'
   );
@@ -76,8 +75,8 @@ async function requestBackend<DataType>(
   options: { method: string; body?: unknown; accessToken?: string },
 ): Promise<Entity.ApiResponse<DataType>> {
   const backendUrl = resolveBackendUrl();
+  
   if (!backendUrl) return createErrorResponse<DataType>('Missing backend configuration.');
-
   try {
     const response = await fetch(`${backendUrl}${pathname}`, {
       method: options.method,
@@ -89,16 +88,17 @@ async function requestBackend<DataType>(
     });
 
     const parsedResponse = (await response.json()) as Entity.ApiResponse<DataType>;
+
     if (!response.ok || !parsedResponse.success) {
       return createErrorResponse(parsedResponse.error ?? `Request failed (${response.status}).`);
     }
 
     return parsedResponse;
   } catch (error) {
+    console.log(error);
     return createErrorResponse(error instanceof Error ? error.message : 'Request failed.');
   }
 }
-
 
 export async function signInWithEmailAndPassword(
   emailAddress: string,

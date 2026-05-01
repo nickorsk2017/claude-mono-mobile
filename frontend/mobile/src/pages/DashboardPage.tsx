@@ -1,15 +1,14 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
-import { IonContent, IonPage } from '@ionic/react';
+import { IonContent, IonPage, useIonRouter } from '@ionic/react';
 import { DashboardOrganism } from '@common/ui-kit';
 
-export function DashboardPage(): JSX.Element {
-  const history = useHistory();
+export function DashboardPage(): React.JSX.Element {
+  const ionRouter = useIonRouter();
 
   return (
     <IonPage>
       <IonContent fullscreen>
-        <DashboardOrganism onSignedOut={() => history.replace('/auth')} />
+        <DashboardOrganism onSignedOut={() => ionRouter.push('/auth', 'root', 'replace')} />
       </IonContent>
     </IonPage>
   );
