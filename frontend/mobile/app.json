@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Serene",
+    "slug": "serene",
+    "version": "1.0.0",
+    "scheme": "serene",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.serene.app"
+    },
+    "android": {
+      "package": "com.serene.app",
+      "softwareKeyboardLayoutMode": "resize",
+      "adaptiveIcon": {
+        "backgroundColor": "#F8F9FE"
+      }
+    },
+    "plugins": []
+  }
+}

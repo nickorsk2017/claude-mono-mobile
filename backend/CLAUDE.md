@@ -105,8 +105,8 @@ Loaded from `/_common/.env` via Docker `env_file`. Copy `_common/.env.example` â
 SUPABASE_URL=...
 SUPABASE_PUBLISHABLE_KEY=...
 SUPABASE_SECRET_KEY=...
-GATEWAY_PORT=4000
-GATEWAY_CORS_ORIGIN=http://localhost:3000
+BACKEND_PORT=4000
+BACKEND_CORS_ORIGIN=http://localhost:3000
 ```
 
 ---

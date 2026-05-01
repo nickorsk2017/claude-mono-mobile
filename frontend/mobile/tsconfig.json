@@ -1,0 +1,49 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-native",
+    "lib": [
+      "esnext"
+    ],
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "paths": {
+      "@common/types/*": [
+        "../_common/types/*"
+      ],
+      "@common/stores/*": [
+        "../_common/stores/*"
+      ],
+      "@common/hooks": [
+        "../_common/hooks/index.ts"
+      ],
+      "@common/hooks/*": [
+        "../_common/hooks/*"
+      ],
+      "@common/services": [
+        "../_common/services/index.ts"
+      ],
+      "@common/services/*": [
+        "../_common/services/*"
+      ],
+      "@common/utils/*": [
+        "../_common/utils/*"
+      ],
+      "@common/schemas/*": [
+        "../_common/schemas/*"
+      ]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "../_common/types/**/*.d.ts",
+    "../_common/schemas/**/*.ts",
+    "../_common/themes/calm-theme.ts",
+    "nativewind-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

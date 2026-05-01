@@ -88,6 +88,7 @@ async function requestBackend<DataType>(
   options: { method: string; body?: unknown; accessToken?: string },
 ): Promise<Entity.ApiResponse<DataType>> {
   const backendUrl = resolveBackendUrl();
+  console.log(backendUrl, 'backendUrl!')
   if (!backendUrl) return createErrorResponse<DataType>('Missing backend configuration.');
 
   try {

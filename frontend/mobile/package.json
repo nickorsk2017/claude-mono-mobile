@@ -1,0 +1,47 @@
+{
+  "name": "mobile",
+  "version": "0.0.1",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "dev": "expo start",
+    "dev:android": "expo start --android",
+    "dev:ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
+  },
+  "dependencies": {
+    "@common/hooks": "workspace:*",
+    "@common/schemas": "workspace:*",
+    "@common/services": "workspace:*",
+    "@common/stores": "workspace:*",
+    "@common/utils": "workspace:*",
+    "@expo/metro-runtime": "55.0.10",
+    "@expo/vector-icons": "^15.0.2",
+    "@hookform/resolvers": "^3.9.0",
+    "expo": "~55.0.19",
+    "expo-build-properties": "^55.0.13",
+    "expo-constants": "^55.0.15",
+    "expo-linking": "^55.0.14",
+    "expo-router": "^55.0.0",
+    "expo-splash-screen": "~55.0.19",
+    "expo-status-bar": "~55.0.5",
+    "nativewind": "4.2.3",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-hook-form": "^7.53.0",
+    "react-native": "0.83.6",
+    "react-native-css-interop": "^0.2.3",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
+    "react-native-web": "~0.21.2",
+    "tailwindcss": "^3.4.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "@types/react": "~19.2.0",
+    "typescript": "^5.3.0"
+  }
+}
