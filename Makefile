@@ -3,6 +3,7 @@ ENV_FILE := ./_common/.env
 PNPM_CMD := env -u PNPM_STORE_DIR -u npm_config_store_dir pnpm
 
 .PHONY: help install backend-install frontend-install mobile-install ui-kit-install \
+        git-commit \
         backend api frontend web mobile \
         lint lint-fix \
         test test-backend test-web test-common test-mobile \
@@ -20,6 +21,9 @@ help:
 	@echo "  make frontend-install     - Install frontend workspace dependencies"
 	@echo "  make ui-kit-install       - Install shared ui-kit workspace dependencies"
 	@echo "  make mobile-install       - Install mobile workspace dependencies"
+	@echo ""
+	@echo "Git:"
+	@echo "  make git-commit           - git commit (-m MESSAGE=... optional; else editor)"
 	@echo ""
 	@echo "Local dev:"
 	@echo "  make backend app        - Run backend api (:4000)"
@@ -68,6 +72,9 @@ mobile-install:
 
 ui-kit-install:
 	$(PNPM_CMD) --dir frontend --filter @common/shared install
+
+git-commit:
+	@if [ -n "$(MESSAGE)" ]; then git commit -m "$(MESSAGE)"; else git commit; fi
 
 # ─── Local dev ────────────────────────────────────────────────────────────────
 
