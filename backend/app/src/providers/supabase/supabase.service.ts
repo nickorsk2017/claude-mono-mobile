@@ -11,7 +11,6 @@ export class SupabaseService {
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL')!;
     const publishableKey = this.configService.get<string>('SUPABASE_PUBLISHABLE_KEY');
     const secretKey = this.configService.get<string>('SUPABASE_SECRET_KEY');
-    console.log(publishableKey, secretKey);
     this.publicClient = createClient(supabaseUrl, publishableKey!);
     this.serviceClient = createClient(supabaseUrl, secretKey!);
   }

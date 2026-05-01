@@ -7,9 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "cap:sync": "cap sync",
-    "android": "cap open android",
-    "ios": "cap open ios"
+    "capacitor:sync": "cap sync",
+    "capacitor:run:android": "cap run android",
+    "capacitor:run:ios": "cap run ios"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",

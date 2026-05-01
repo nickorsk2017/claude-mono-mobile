@@ -19,13 +19,11 @@ Each subdirectory has its own `CLAUDE.md` — read both.
 │   ├── package.json           # Workspace root — packageManager: pnpm@9.15.0
 │   ├── pnpm-workspace.yaml    # Workspace package declarations
 │   ├── pnpm-lock.yaml         # Committed lockfile — never edit manually
-│   ├── .npmrc                 # shamefully-hoist=true (Next.js compatibility)
 │   ├── tsconfig.json
 │   ├── web/                   # Next.js + React + Tailwind
 │   ├── mobile/               # Ionic (latest) + React
 │   └── _common/               # hooks, services, stores, types, ui-kit, utils
-├── backend/                   # NestJS microservices (gateway, auth-service, user-service)
-├── mcp/                       # AI Agent via Model Context Protocol
+├── backend/                   # NestJS API
 ├── _common/                   # Server-side only: migrations/ + .env
 ├── docker-compose.yml
 ├── .gitignore
@@ -41,10 +39,10 @@ Two permanent zones. Files must never cross zone boundaries.
 | Zone | Paths | Purpose |
 |---|---|---|
 | **Frontend** | `frontend/` | Client-side: web, mobile, shared frontend logic |
-| **Backend** | `backend/`, `mcp/`, `_common/` | Server-side: API, agents, migrations, env |
+| **Backend** | `backend/`, `_common/` | Server-side: API, migrations, env |
 
-- `backend/` and `mcp/` must never import from `frontend/`
-- `frontend/` must never import from `backend/` or `mcp/` — only via HTTP calls
+- `backend/` must never import from `frontend/`
+- `frontend/` must never import from `backend/` — only via HTTP calls
 - Root `_common/` is server-only: `migrations/` and `.env*` only
 - `frontend/_common/` is client-only: `hooks/`, `services/`, `stores/`, `types/`, `ui-kit/`, `utils/`
 
@@ -61,23 +59,42 @@ Two permanent zones. Files must never cross zone boundaries.
 ## Rule 3 — Naming Conventions
 
 - **Zero abbreviations** in any identifier, file name, or folder name.
+- **Frontend files use CamelCase** — no hyphens in file names inside `frontend/`.
 
 | ❌ Forbidden | ✅ Required |
 |---|---|
 | `const v = ...` | `const currentValue = ...` |
 | `map((t) => ...)` | `map((transaction) => ...)` |
 | `catch (e)` | `catch (error)` |
-| `fn`, `cb`, `res` | `handler`, `callback`, `response`
+| `fn`, `cb`, `res` | `handler`, `callback`, `response` |
+| `use-authentication.ts` | `useAuthentication.ts` |
+| `auth-service.ts` | `AuthService.ts` |
+| `use-auth-store.ts` | `useAuthStore.ts` |
 
 ---
 
 ## Rule 4 — TypeScript
 
-### 4.1 — Types live in `frontend/_common/types/` only
+### 4.1 — Where types live
 
-- All shared types → `frontend/_common/types/*.d.ts`
-- No inline exported types in components, hooks, services, or controllers
-- Import via `import type { ... } from '@common/types/...'`
+**Shared / global types** → `frontend/_common/types/*.d.ts` (inside `namespace Entity {}`)
+
+**Component prop types** → defined inline inside the same file as the component, not exported, not moved to `_common/types/`
+
+```typescript
+// ✅ Correct — props defined locally, not exported
+interface ButtonProps {
+  label: string;
+  onClick: () => void;
+}
+export function Button({ label, onClick }: ButtonProps) { ... }
+
+// ❌ Wrong — props exported or moved to _common/types
+export interface ButtonProps { ... }
+```
+
+- No inline **exported** types in components, hooks, services, or controllers
+- Import shared types via `import type { ... } from '@common/types/...'`
 
 ### 4.2 — Root Entity Namespace
 
@@ -105,7 +122,7 @@ declare global {
 
 ### 4.3 — No `*.d.ts` outside `frontend/_common/types/`
 
-Banned from: `frontend/web/`, `frontend/mobile/`, `backend/`, `mcp/`, repo root.
+Banned from: `frontend/web/`, `frontend/mobile/`, `backend/`, repo root.
 
 ---
 
@@ -146,7 +163,6 @@ packages:
 
 - `"packageManager": "pnpm@9.15.0"` pinned in every workspace root `package.json`
 - `pnpm-lock.yaml` is always committed — never delete or edit it manually
-- `frontend/.npmrc` enables `shamefully-hoist=true` for Next.js peer dep compatibility
 
 ### Docker installs
 
@@ -162,7 +178,7 @@ RUN pnpm install --frozen-lockfile
 - Single source of truth: `_common/.env`
 - All Docker services mount it via `env_file` in `docker-compose.yml`
 - Never commit `_common/.env` — commit only `_common/.env.example`
-- Naming: `SCREAMING_SNAKE_CASE`, prefixed by service (`WEB_`, `BACKEND_`, `MCP_`, `SUPABASE_`)
+- Naming: `SCREAMING_SNAKE_CASE`, prefixed by service (`WEB_`, `BACKEND_`, `SUPABASE_`)
 
 ---
 
@@ -170,10 +186,7 @@ RUN pnpm install --frozen-lockfile
 
 - Each service owns its `Dockerfile`:
   - `frontend/web/Dockerfile` (build context: `./frontend`)
-  - `backend/gateway/Dockerfile` (build context: `.`)
-  - `backend/auth-service/Dockerfile` (build context: `.`)
-  - `backend/user-service/Dockerfile` (build context: `.`)
-  - `mcp/Dockerfile` (build context: `.`)
+  - `backend/app/Dockerfile` (build context: `.`)
 - `docker-compose.yml` at repo root is the only way to run all services together
 - Multi-stage builds required: `dependencies → builder → runner`
 - Always install with `pnpm install --frozen-lockfile` — never copy `node_modules` into the image
@@ -186,7 +199,7 @@ RUN pnpm install --frozen-lockfile
 - [ ] No abbreviations in any identifier or file name
 - [ ] All shared types are in `frontend/_common/types/*.d.ts` inside `namespace Entity {}`
 - [ ] `_common/.env` is not committed; `_common/.env.example` is updated if needed
-- [ ] No `frontend/` code imports directly from `backend/` or `mcp/`
+- [ ] No `frontend/` code imports directly from `backend/`
 - [ ] Root `_common/` contains only `migrations/` and `.env*`
 - [ ] Dockerfiles use multi-stage builds with `pnpm install --frozen-lockfile`
 - [ ] Workspace deps use `"workspace:*"` protocol

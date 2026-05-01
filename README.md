@@ -23,6 +23,7 @@ Monorepo for the Serene web app, Ionic mobile app, NestJS backend API, and share
 - Node.js 22+
 - pnpm 9.15.0
 - Docker + Docker Compose (for containerised workflow)
+- Makefile
 
 ---
 
@@ -46,14 +47,11 @@ If the pnpm store is inconsistent, reset cleanly:
 ```bash
 pnpm store prune
 rm -rf frontend/node_modules frontend/mobile/node_modules backend/app/node_modules
-env -u PNPM_STORE_DIR -u npm_config_store_dir pnpm --dir frontend install --force
-env -u PNPM_STORE_DIR -u npm_config_store_dir pnpm --dir frontend/mobile install --force
-env -u PNPM_STORE_DIR -u npm_config_store_dir pnpm --dir backend/app install --force
 ```
 
 ---
 
-## Run locally
+## Run locally (Recommended)
 
 ### Backend + Web
 
@@ -102,13 +100,11 @@ make docker-restart  # Stop, rebuild, start
 
 ## Mobile — Capacitor native builds
 
-After building the web bundle (`pnpm --dir frontend/mobile build`):
-
 ```bash
-cd frontend/mobile
-npx cap sync          # Sync bundle to native platforms
-npx cap run android   # Run on Android emulator / device
-npx cap run ios       # Run on iOS simulator / device
+make mobile-build           # Build frontend/mobile bundle
+make mobile-capacitor-sync  # Build + sync to native platforms
+make mobile-run-android     # Build + sync + run on Android
+make mobile-run-ios         # Build + sync + run on iOS
 ```
 
 ---
@@ -117,7 +113,7 @@ npx cap run ios       # Run on iOS simulator / device
 
 ```bash
 pnpm --dir backend/app build
-pnpm --dir frontend --filter web build
+pnpm --dir frontend/web build
 pnpm --dir frontend/mobile build
 ```
 
@@ -136,11 +132,69 @@ pnpm --dir frontend/mobile build
 
 ## Architecture
 
-```
-Browser / Ionic WebView
-  └── frontend/_common/services  ← all API calls
-        └── frontend/_common/hooks  ← business logic
-              └── frontend/_common/stores  ← Zustand global state
+The repository is split into two strict runtime zones:
+
+- **Frontend zone**: `frontend/web`, `frontend/mobile`, `frontend/_common`
+- **Backend zone**: `backend/app`, root `_common` env and infra files
+
+Frontend code never imports backend source directly. Communication is HTTP-only through the API.
+
+### Frontend layering model
+
+Both clients (`web` and `mobile`) are thin shells. Shared logic is centralized in `frontend/_common`.
+
+```text
+Web (Next.js) / Mobile (Ionic)
+  -> _common/ui-kit        (shared presentational components)
+  -> _common/hooks         (feature orchestration and side effects)
+  -> _common/stores        (Zustand global state)
+  -> _common/services      (API client and auth/session calls)
+  -> Backend API           (NestJS endpoints)
 ```
 
-All non-UI logic lives in `frontend/_common/`. Both the web and mobile apps are thin UI shells that import from `_common` — no business logic is duplicated.
+### Responsibilities by package
+
+- `frontend/web`
+  - Next.js routing, server rendering concerns, web-only adapters
+  - Uses shared `_common` hooks/services/ui-kit for feature behavior
+- `frontend/mobile`
+  - Ionic shell (`IonApp`, router/outlet), Capacitor integration, mobile navigation
+  - Reuses shared `_common` feature logic and UI components
+- `backend/app`
+  - NestJS API, auth/session endpoints, CORS and env-driven runtime config
+
+### `frontend/_common` (shared frontend core)
+
+`frontend/_common` is the single source of truth for reusable frontend behavior shared by **both** clients (web and mobile).
+
+- `frontend/_common/ui-kit`
+  - Reusable atoms/molecules/organisms consumed by both apps
+  - Visual tokens come from `frontend/_common/themes/calm-theme.ts`
+- `frontend/_common/hooks`
+  - Feature orchestration and side effects (for example auth flows)
+  - Composes services + stores instead of embedding API logic in pages
+- `frontend/_common/services`
+  - API transport layer (`fetch`, backend URL resolution, response mapping)
+  - Keeps request/response contracts centralized
+- `frontend/_common/stores`
+  - Zustand global state (session, user, cross-screen state)
+- `frontend/_common/types`
+  - Shared type contracts used by web, mobile, and backend integration points
+
+Rules for usage:
+
+1. Place business logic in `_common/hooks` or `_common/services`, not in page components.
+2. Keep web/mobile pages as thin wrappers around `_common` hooks and UI-kit.
+3. Reuse existing `_common` modules before creating app-specific duplicates.
+
+### Authentication and redirect flow
+
+1. UI shell renders shared auth/dashboard organisms from `_common/ui-kit`.
+2. Form actions call shared hooks (`useAuthentication`, `useSignUp`).
+3. Hooks call shared service functions in `_common/services/AuthService.ts`.
+4. Service hits backend `/auth/*` endpoints and updates auth store.
+5. Route guards redirect:
+   - authenticated users -> `/dashboard`
+   - unauthenticated users -> `/auth`
+
+This keeps business logic in one place and prevents feature divergence between web and mobile.

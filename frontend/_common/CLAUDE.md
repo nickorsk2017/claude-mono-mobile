@@ -30,7 +30,7 @@ Both web and mobile import from `@common/services` — there is no local `servic
 - Receive only primitive arguments — no framework objects
 
 ```typescript
-// ✅ frontend/_common/services/authentication-service.ts
+// ✅ frontend/_common/services/AuthService.ts
 export async function signInWithEmailAndPassword(
   email: string,
   password: string
@@ -47,13 +47,13 @@ export async function signInWithEmailAndPassword(
 
 | File | Responsibility |
 |---|---|
-| `AutheService.ts` | Supabase auth: sign-in, sign-out, session |
+| `AuthService.ts` | Supabase auth: sign-in, sign-out, session |
 | `UserService.ts` | User CRUD via REST or Supabase |
 
 ### Import alias
 
 ```typescript
-import { signInWithEmailAndPassword } from '@common/services/authentication-service';
+import { signInWithEmailAndPassword } from '@common/services/AuthService';
 ```
 
 ---
@@ -96,19 +96,19 @@ Hooks run identically in web and mobile.
 
 ### Naming
 
-`use-[domain]-[action].ts`
+`use[Domain][Action].ts` — camelCase, no hyphens:
 
 | File | Responsibility |
 |---|---|
-| `use-authentication.ts` | Login, logout, session restore |
-| `use-user-list.ts` | Fetch paginated users, infinite scroll |
-| `use-api-fetch.ts` | Generic loading/error wrapper for one-shot requests |
+| `useAuthentication.ts` | Login, logout, session restore |
+| `useUserList.ts` | Fetch paginated users, infinite scroll |
+| `useApiFetch.ts` | Generic loading/error wrapper for one-shot requests |
 
 ---
 
 ## Rule — Stores (`stores/`)
 
-- File pattern: `use-[domain]-store.ts`
+- File pattern: `use[Domain]Store.ts` — camelCase, no hyphens
 - Both `frontend/web/` and `frontend/mobile/` import stores **only** from here
 - No local Zustand stores in `web/` or `mobile/`
 - Use `persist` middleware only for data that must survive a page refresh

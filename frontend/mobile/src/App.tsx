@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
@@ -8,7 +8,6 @@ import { AuthPage } from './pages/AuthPage';
 import { DashboardPage } from './pages/DashboardPage';
 
 setupIonicReact();
-const IonReactRouterWithChildren = IonReactRouter as React.ComponentType<React.PropsWithChildren>;
 
 export function App(): React.JSX.Element {
   const currentUser = useAuthenticationStore((state) => state.currentUser);
@@ -41,7 +40,7 @@ export function App(): React.JSX.Element {
 
   return (
     <IonApp>
-      <IonReactRouterWithChildren>
+      <IonReactRouter>
         <IonRouterOutlet>
           <Route
             exact
@@ -70,7 +69,7 @@ export function App(): React.JSX.Element {
             }}
           />
         </IonRouterOutlet>
-      </IonReactRouterWithChildren>
+      </IonReactRouter>
     </IonApp>
   );
 }

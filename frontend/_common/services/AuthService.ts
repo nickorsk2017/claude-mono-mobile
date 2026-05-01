@@ -95,7 +95,6 @@ async function requestBackend<DataType>(
 
     return parsedResponse;
   } catch (error) {
-    console.log(error);
     return createErrorResponse(error instanceof Error ? error.message : 'Request failed.');
   }
 }
