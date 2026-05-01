@@ -4,7 +4,7 @@ import React, { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthentication } from '@common/shared/hooks';
 import { Button, Icon } from '@common/shared/ui-kit';
-import type { ServerUser } from '@/shared/lib/getServerUser';
+import type { ServerUser } from '../../lib/getServerUser';
 
 interface DashboardViewProps {
   user: ServerUser;

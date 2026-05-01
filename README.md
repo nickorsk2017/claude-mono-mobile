@@ -143,6 +143,14 @@ pnpm --dir frontend/web lint
 pnpm --dir frontend/mobile lint
 ```
 
+Pre-commit checks:
+
+```bash
+make pre-commit-check
+```
+
+Git commits also run this automatically through the repository `pre-commit` hook.
+
 ---
 
 ## Environment variables

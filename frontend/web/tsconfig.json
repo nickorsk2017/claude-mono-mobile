@@ -2,6 +2,7 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "target": "ES2022",
+    "baseUrl": ".",
     "lib": [
       "dom",
       "dom.iterable",
@@ -27,7 +28,8 @@
     },
     "allowJs": true,
     "resolveJsonModule": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "types": ["jest", "node"]
   },
   "include": [
     "next-env.d.ts",
@@ -40,6 +42,8 @@
   ],
   "exclude": [
     "node_modules",
-    "**/*.stories.tsx"
+    "**/*.stories.tsx",
+    "**/*.test.ts",
+    "**/*.test.tsx"
   ]
 }

@@ -2,15 +2,49 @@ import { Body, Controller, Get, Headers, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthenticationService } from './authentication.service';
 
+const ACCESS_TOKEN_COOKIE = 'accessToken';
 const REFRESH_TOKEN_COOKIE = 'refreshToken';
+const THIRTY_DAYS_IN_MILLISECONDS = 30 * 24 * 60 * 60 * 1000;
 
-const refreshCookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
-  maxAge: 30 * 24 * 60 * 60 * 1000,
-  path: '/',
-};
+function resolveAccessTokenMaxAge(expiresAt: number | undefined): number {
+  if (!expiresAt) {
+    return 60 * 60 * 1000;
+  }
+
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  const expiresAtInSeconds = expiresAt > 10_000_000_000 ? Math.floor(expiresAt / 1000) : expiresAt;
+  const computedMaxAgeInSeconds = expiresAtInSeconds - nowInSeconds;
+
+  return (computedMaxAgeInSeconds > 0 ? computedMaxAgeInSeconds : 1) * 1000;
+}
+
+function buildCookieOptions(maxAge: number) {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict' as const,
+    maxAge,
+    path: '/',
+  };
+}
+
+function setAuthenticationCookies(response: Response, session: Entity.AuthenticationTokens): void {
+  response.cookie(
+    ACCESS_TOKEN_COOKIE,
+    session.accessToken,
+    buildCookieOptions(resolveAccessTokenMaxAge(session.expiresAt)),
+  );
+  response.cookie(
+    REFRESH_TOKEN_COOKIE,
+    session.refreshToken,
+    buildCookieOptions(THIRTY_DAYS_IN_MILLISECONDS),
+  );
+}
+
+function clearAuthenticationCookies(response: Response): void {
+  response.clearCookie(ACCESS_TOKEN_COOKIE, { path: '/' });
+  response.clearCookie(REFRESH_TOKEN_COOKIE, { path: '/' });
+}
 
 @Controller('auth')
 export class AuthenticationController {
@@ -24,7 +58,7 @@ export class AuthenticationController {
     const result = await this.authenticationService.signIn(credentials);
 
     if (result.success && result.data) {
-      response.cookie(REFRESH_TOKEN_COOKIE, result.data.refreshToken, refreshCookieOptions);
+      setAuthenticationCookies(response, result.data);
     }
 
     return result;
@@ -51,7 +85,7 @@ export class AuthenticationController {
     const result = await this.authenticationService.refreshSession({ refreshToken });
 
     if (result.success && result.data) {
-      response.cookie(REFRESH_TOKEN_COOKIE, result.data.refreshToken, refreshCookieOptions);
+      setAuthenticationCookies(response, result.data);
     }
 
     return result;
@@ -63,7 +97,7 @@ export class AuthenticationController {
     @Res({ passthrough: true }) response: Response,
     @Headers('authorization') authorizationHeader: string,
   ) {
-    response.clearCookie(REFRESH_TOKEN_COOKIE, { path: '/' });
+    clearAuthenticationCookies(response);
     const token = authorizationHeader?.slice(7) ?? '';
 
     if (!token) {

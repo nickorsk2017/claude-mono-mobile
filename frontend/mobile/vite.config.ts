@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     define: {
       'process.env.BACKEND_URL': JSON.stringify(backendUrl),
+      'process.env.NEXT_PUBLIC_RUNTIME_PLATFORM': JSON.stringify('mobile'),
     },
     resolve: {
       dedupe: ['react', 'react-dom'],

@@ -26,7 +26,10 @@ describe('AuthPage', () => {
   });
 
   it('renders auth form when user is not authenticated', () => {
-    useAuthenticationStoreMock.mockImplementation((selector) => selector({ currentUser: null }));
+    useAuthenticationStoreMock.mockImplementation(
+      (selector: (state: { currentUser: { id: string } | null }) => unknown) =>
+        selector({ currentUser: null }),
+    );
 
     render(<AuthPage />);
 
@@ -35,7 +38,10 @@ describe('AuthPage', () => {
   });
 
   it('redirects to dashboard when user exists', () => {
-    useAuthenticationStoreMock.mockImplementation((selector) => selector({ currentUser: { id: '1' } }));
+    useAuthenticationStoreMock.mockImplementation(
+      (selector: (state: { currentUser: { id: string } | null }) => unknown) =>
+        selector({ currentUser: { id: '1' } }),
+    );
 
     const { container } = render(<AuthPage />);
 

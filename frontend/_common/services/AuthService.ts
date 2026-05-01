@@ -13,6 +13,14 @@ const REFRESH_TOKEN_COOKIE_KEY = 'refreshToken';
 let activeAccessToken: string | null = null;
 let activeRefreshToken: string | null = null;
 
+function resolveRuntimePlatform(): 'web' | 'mobile' {
+  return process.env.NEXT_PUBLIC_RUNTIME_PLATFORM === 'mobile' ? 'mobile' : 'web';
+}
+
+function shouldManageClientCookies(): boolean {
+  return typeof document !== 'undefined' && resolveRuntimePlatform() === 'mobile';
+}
+
 function resolveAccessTokenMaxAge(expiresAt: number | undefined): number {
   if (!expiresAt) return 3600;
 
@@ -25,7 +33,7 @@ function resolveAccessTokenMaxAge(expiresAt: number | undefined): number {
 
 function setActiveAccessToken(nextToken: string | null, expiresAt?: number): void {
   activeAccessToken = nextToken;
-  if (typeof document === 'undefined') return;
+  if (!shouldManageClientCookies()) return;
   if (nextToken) {
     const accessTokenMaxAge = resolveAccessTokenMaxAge(expiresAt);
     document.cookie = `${ACCESS_TOKEN_COOKIE_KEY}=${encodeURIComponent(nextToken)}; path=/; max-age=${accessTokenMaxAge}; SameSite=Strict`;
@@ -36,7 +44,7 @@ function setActiveAccessToken(nextToken: string | null, expiresAt?: number): voi
 
 function getActiveAccessToken(): string | null {
   if (activeAccessToken) return activeAccessToken;
-  if (typeof document === 'undefined') return null;
+  if (!shouldManageClientCookies()) return null;
   const cookieMatch = document.cookie.match(new RegExp(`(?:^|;\\s*)${ACCESS_TOKEN_COOKIE_KEY}=([^;]*)`));
   if (!cookieMatch) return null;
   activeAccessToken = decodeURIComponent(cookieMatch[1]);
@@ -45,7 +53,7 @@ function getActiveAccessToken(): string | null {
 
 function setActiveRefreshToken(nextToken: string | null): void {
   activeRefreshToken = nextToken;
-  if (typeof document === 'undefined') return;
+  if (!shouldManageClientCookies()) return;
   if (nextToken) {
     const thirtyDaysInSeconds = 60 * 60 * 24 * 30;
     document.cookie = `${REFRESH_TOKEN_COOKIE_KEY}=${encodeURIComponent(nextToken)}; path=/; max-age=${thirtyDaysInSeconds}; SameSite=Strict`;
@@ -56,7 +64,7 @@ function setActiveRefreshToken(nextToken: string | null): void {
 
 function getActiveRefreshToken(): string | null {
   if (activeRefreshToken) return activeRefreshToken;
-  if (typeof document === 'undefined') return null;
+  if (!shouldManageClientCookies()) return null;
   const cookieMatch = document.cookie.match(new RegExp(`(?:^|;\\s*)${REFRESH_TOKEN_COOKIE_KEY}=([^;]*)`));
   if (!cookieMatch) return null;
   activeRefreshToken = decodeURIComponent(cookieMatch[1]);
