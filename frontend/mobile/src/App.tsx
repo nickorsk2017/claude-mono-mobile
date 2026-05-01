@@ -21,7 +21,8 @@ export function App(): React.JSX.Element {
 
     async function initializeSession() {
       const activeSessionResponse = await getActiveSession();
-      if (!isMounted) return;
+
+      if (!isMounted) {return;}
 
       if (activeSessionResponse.success && activeSessionResponse.data?.user) {
         setCurrentUser(activeSessionResponse.data.user);
@@ -33,6 +34,7 @@ export function App(): React.JSX.Element {
     }
 
     void initializeSession();
+
     return () => {
       isMounted = false;
     };
@@ -46,8 +48,10 @@ export function App(): React.JSX.Element {
             exact
             path="/auth"
             render={() => {
-              if (!isSessionInitialized) return null;
-              if (currentUser) return <Redirect to="/dashboard" />;
+              if (!isSessionInitialized) {return null;}
+
+              if (currentUser) {return <Redirect to="/dashboard" />;}
+
               return <AuthPage />;
             }}
           />
@@ -55,8 +59,10 @@ export function App(): React.JSX.Element {
             exact
             path="/dashboard"
             render={() => {
-              if (!isSessionInitialized) return null;
-              if (!currentUser) return <Redirect to="/auth" />;
+              if (!isSessionInitialized) {return null;}
+
+              if (!currentUser) {return <Redirect to="/auth" />;}
+
               return <DashboardPage />;
             }}
           />
@@ -64,7 +70,8 @@ export function App(): React.JSX.Element {
             exact
             path="/"
             render={() => {
-              if (!isSessionInitialized) return null;
+              if (!isSessionInitialized) {return null;}
+
               return <Redirect to={currentUser ? '/dashboard' : '/auth'} />;
             }}
           />

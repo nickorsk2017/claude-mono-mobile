@@ -28,6 +28,7 @@ export class SupabaseAuthenticationGuard implements CanActivate {
 
     request.headers['x-user-id'] = data.user.id;
     request.headers['x-user-email'] = data.user.email ?? '';
+
     return true;
   }
 }

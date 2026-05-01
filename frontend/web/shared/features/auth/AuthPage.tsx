@@ -15,7 +15,7 @@ export default function AuthPage() {
     }
   }, [currentUser, router]);
 
-  if (currentUser) return null;
+  if (currentUser) { return null; }
 
   return (
     <div className="md:min-h-screen  h-screen flex items-center justify-center bg-calm-background md:p-4">

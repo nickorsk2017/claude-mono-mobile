@@ -22,9 +22,11 @@ export class AuthenticationController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const result = await this.authenticationService.signIn(credentials);
+
     if (result.success && result.data) {
       response.cookie(REFRESH_TOKEN_COOKIE, result.data.refreshToken, refreshCookieOptions);
     }
+
     return result;
   }
 
@@ -36,6 +38,7 @@ export class AuthenticationController {
   @Get('session')
   async getSession(@Headers('authorization') authorizationHeader: string) {
     const token = authorizationHeader?.slice(7) ?? '';
+
     return this.authenticationService.getSession(token);
   }
 
@@ -46,9 +49,11 @@ export class AuthenticationController {
   ) {
     const refreshToken = (request.cookies as Record<string, string>)?.[REFRESH_TOKEN_COOKIE] ?? '';
     const result = await this.authenticationService.refreshSession({ refreshToken });
+
     if (result.success && result.data) {
       response.cookie(REFRESH_TOKEN_COOKIE, result.data.refreshToken, refreshCookieOptions);
     }
+
     return result;
   }
 
@@ -60,7 +65,11 @@ export class AuthenticationController {
   ) {
     response.clearCookie(REFRESH_TOKEN_COOKIE, { path: '/' });
     const token = authorizationHeader?.slice(7) ?? '';
-    if (!token) return { success: true, data: null, error: null };
+
+    if (!token) {
+      return { success: true, data: null, error: null };
+    }
+
     return this.authenticationService.signOut(token);
   }
 }

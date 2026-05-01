@@ -4,6 +4,7 @@ PNPM_CMD := env -u PNPM_STORE_DIR -u npm_config_store_dir pnpm
 
 .PHONY: help install backend-install frontend-install mobile-install ui-kit-install \
         backend api frontend web mobile \
+        lint lint-fix \
         mobile-build mobile-capacitor-sync mobile-run-android mobile-run-ios \
         fullstack-web fullstack-mobile \
         docker-build docker-up docker-down docker-restart \
@@ -28,6 +29,8 @@ help:
 	@echo "  make mobile-capacitor-sync - Sync mobile bundle to native platforms"
 	@echo "  make mobile-run-android   - Build, sync, and run on Android"
 	@echo "  make mobile-run-ios       - Build, sync, and run on iOS"
+	@echo "  make lint                 - Run backend + web + mobile linters"
+	@echo "  make lint-fix             - Run backend + web + mobile linters with --fix"
 	@echo ""
 	@echo "Docker:"
 	@echo "  make docker-build         - Build all service images"
@@ -81,6 +84,16 @@ mobile-run-android: mobile-capacitor-sync
 
 mobile-run-ios: mobile-capacitor-sync
 	$(PNPM_CMD) --dir frontend/mobile capacitor:run:ios
+
+lint:
+	$(PNPM_CMD) --dir backend/app lint
+	$(PNPM_CMD) --dir frontend/web lint
+	$(PNPM_CMD) --dir frontend/mobile lint
+
+lint-fix:
+	$(PNPM_CMD) --dir backend/app lint:fix
+	$(PNPM_CMD) --dir frontend/web lint:fix
+	$(PNPM_CMD) --dir frontend/mobile lint:fix
 
 
 fullstack-web: kill-all-ports

@@ -4,7 +4,6 @@ import { HealthModule } from './health/health.module';
 import { SupabaseModule } from './providers';
 import { AuthenticationModule } from './authentication/authentication.module';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),

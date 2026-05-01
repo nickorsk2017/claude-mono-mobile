@@ -4,5 +4,6 @@ import { getServerUser } from '@/shared/lib/getServerUser';
 
 export default async  function AuthPageServer() {
   await getServerUser();
+
   return <AuthenticationPage/>;
 }

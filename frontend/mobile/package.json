@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "capacitor:sync": "cap sync",
     "capacitor:run:android": "cap run android",
     "capacitor:run:ios": "cap run ios"
@@ -32,6 +34,8 @@
     "react-router-dom": "^5.3.4"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.30.1",
+    "@typescript-eslint/parser": "^8.30.1",
     "@capacitor/cli": "^7.0.0",
     "@types/react": "~19.2.0",
     "@types/react-dom": "19.2.3",
@@ -39,6 +43,8 @@
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.20",
+    "eslint": "^9.26.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "postcss": "^8.5.0",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.3.0",

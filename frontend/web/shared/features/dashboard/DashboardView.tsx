@@ -17,6 +17,7 @@ export const DashboardView = React.memo(function DashboardView({ user }: Dashboa
   const { logout, isAuthenticating } = useAuthentication();
   const handleSignOut = useCallback(async () => {
     const didSignOut = await logout();
+
     if (didSignOut) {
       router.push('/auth');
     }

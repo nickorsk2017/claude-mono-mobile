@@ -119,6 +119,32 @@ pnpm --dir frontend/mobile build
 
 ---
 
+## Lint
+
+Shared lint rules are centralized in `_common/eslint/base.cjs` and reused by backend, web, and mobile ESLint flat configs.
+
+Run linters for all apps:
+
+```bash
+make lint
+```
+
+Auto-fix lint issues for all apps:
+
+```bash
+make lint-fix
+```
+
+Run linter per app:
+
+```bash
+pnpm --dir backend/app lint
+pnpm --dir frontend/web lint
+pnpm --dir frontend/mobile lint
+```
+
+---
+
 ## Environment variables
 
 | Prefix | Used by |

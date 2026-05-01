@@ -7,7 +7,9 @@
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix"
   },
   "dependencies": {
     "@common/hooks": "workspace:*",
@@ -27,11 +29,16 @@
     "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.30.1",
+    "@typescript-eslint/parser": "^8.30.1",
     "@tailwindcss/postcss": "^4.2.4",
     "@types/node": "^22.0.0",
     "@types/react": "~19.2.10",
     "@types/react-dom": "19.2.3",
     "autoprefixer": "^10.4.0",
+    "eslint": "^9.26.0",
+    "eslint-config-next": "^16.2.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "lightningcss": "^1.32.0",
     "lightningcss-darwin-arm64": "^1.32.0",
     "postcss": "^8.4.0",
