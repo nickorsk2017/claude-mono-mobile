@@ -5,6 +5,8 @@ PNPM_CMD := env -u PNPM_STORE_DIR -u npm_config_store_dir pnpm
 .PHONY: help install backend-install frontend-install mobile-install ui-kit-install \
         backend api frontend web mobile \
         lint lint-fix \
+        test test-backend test-web test-common test-mobile \
+        test-coverage test-backend-coverage test-web-coverage test-common-coverage test-mobile-coverage \
         mobile-build mobile-capacitor-sync mobile-run-android mobile-run-ios \
         fullstack-web fullstack-mobile \
         docker-build docker-up docker-down docker-restart \
@@ -31,6 +33,12 @@ help:
 	@echo "  make mobile-run-ios       - Build, sync, and run on iOS"
 	@echo "  make lint                 - Run backend + web + mobile linters"
 	@echo "  make lint-fix             - Run backend + web + mobile linters with --fix"
+	@echo "  make test                 - Run all unit tests (backend, web, _common, mobile)"
+	@echo "  make test-backend         - Run backend api Jest tests"
+	@echo "  make test-web             - Run web Jest tests"
+	@echo "  make test-common          - Run frontend/_common (@common/shared) Jest tests"
+	@echo "  make test-mobile          - Run mobile Jest tests"
+	@echo "  make test-coverage        - Run test:coverage in all packages above"
 	@echo ""
 	@echo "Docker:"
 	@echo "  make docker-build         - Build all service images"
@@ -59,7 +67,7 @@ mobile-install:
 	$(PNPM_CMD) --dir frontend/mobile install
 
 ui-kit-install:
-	$(PNPM_CMD) --dir frontend --filter @common/ui-kit install
+	$(PNPM_CMD) --dir frontend --filter @common/shared install
 
 # ─── Local dev ────────────────────────────────────────────────────────────────
 
@@ -94,6 +102,36 @@ lint-fix:
 	$(PNPM_CMD) --dir backend/app lint:fix
 	$(PNPM_CMD) --dir frontend/web lint:fix
 	$(PNPM_CMD) --dir frontend/mobile lint:fix
+
+# ─── Tests (Jest + React Testing Library) ─────────────────────────────────────
+
+test: test-backend test-web test-common test-mobile
+
+test-backend:
+	$(PNPM_CMD) --dir backend/app test
+
+test-web:
+	$(PNPM_CMD) --dir frontend --filter web test
+
+test-common:
+	$(PNPM_CMD) --dir frontend --filter @common/shared test
+
+test-mobile:
+	$(PNPM_CMD) --dir frontend --filter mobile test
+
+test-coverage: test-backend-coverage test-web-coverage test-common-coverage test-mobile-coverage
+
+test-backend-coverage:
+	$(PNPM_CMD) --dir backend/app run test:coverage
+
+test-web-coverage:
+	$(PNPM_CMD) --dir frontend --filter web run test:coverage
+
+test-common-coverage:
+	$(PNPM_CMD) --dir frontend --filter @common/shared run test:coverage
+
+test-mobile-coverage:
+	$(PNPM_CMD) --dir frontend --filter mobile run test:coverage
 
 
 fullstack-web: kill-all-ports

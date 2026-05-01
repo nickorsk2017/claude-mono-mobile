@@ -9,8 +9,12 @@
     "skipLibCheck": true,
     "noEmit": true,
     "paths": {
-      "@common/types/*": ["./_common/types/*"],
-      "@common/shared/*": ["./_common/*"]
+      "@common/types/*": [
+        "./_common/types/*"
+      ],
+      "@common/shared/*": [
+        "./_common/*"
+      ]
     }
   }
 }

@@ -9,7 +9,6 @@ const meta: Meta<typeof TextInput> = {
   argTypes: {
     type: { control: 'select', options: ['text', 'password'] },
     size: { control: 'select', options: ['small', 'medium', 'large'] },
-    themeName: { control: 'select', options: ['calmLight', 'calmDark'] },
   },
 };
 
@@ -23,12 +22,12 @@ function StatefulTemplate(args: React.ComponentProps<typeof TextInput>) {
 
 export const Text: TextInputStory = {
   render: (args) => <StatefulTemplate {...args} />,
-  args: { label: 'Email', placeholder: 'you@example.com', value: '', type: 'text', size: 'medium', themeName: 'calmLight' },
+  args: { label: 'Email', placeholder: 'you@example.com', value: '', type: 'text', size: 'medium' },
 };
 
 export const Password: TextInputStory = {
   render: (args) => <StatefulTemplate {...args} />,
-  args: { label: 'Password', placeholder: 'Enter password', value: '', type: 'password', size: 'medium', themeName: 'calmLight' },
+  args: { label: 'Password', placeholder: 'Enter password', value: '', type: 'password', size: 'medium' },
 };
 
 export const ErrorDark: TextInputStory = {
@@ -39,8 +38,6 @@ export const ErrorDark: TextInputStory = {
     value: '123',
     type: 'password',
     size: 'large',
-    themeName: 'calmDark',
-    hasError: true,
     errorMessage: 'Password must be at least 8 characters',
   },
 };
