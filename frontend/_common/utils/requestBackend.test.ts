@@ -71,6 +71,28 @@ describe('requestBackend', () => {
     );
   });
 
+  it('merges caller-provided headers into fetch request', async () => {
+    fetchMock.mockImplementation(async () => ({
+      ok: true,
+      json: async () => ({ success: true, data: null, error: null }),
+    }));
+
+    await requestBackend('/route', {
+      method: 'POST',
+      headers: { 'x-client-platform': 'mobile' },
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-platform': 'mobile',
+        },
+      }),
+    );
+  });
+
   it('returns error envelope when response is not ok', async () => {
     fetchMock.mockImplementation(async () => ({
       ok: false,

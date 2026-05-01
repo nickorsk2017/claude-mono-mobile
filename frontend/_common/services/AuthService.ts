@@ -1,12 +1,19 @@
 import { requestBackend } from '@common/shared/utils';
 
-type BackendAuthenticationResponse = {
+type BackendAuthenticationSession = {
+  accessToken?: string;
+  refreshToken?: string;
+  expiresAt?: number;
+};
+type MobileAuthenticationSession = {
   accessToken: string;
   refreshToken: string;
   expiresAt: number;
+};
+type BackendAuthenticationResponse = BackendAuthenticationSession & {
   user: Pick<Entity.User, 'id' | 'email' | 'displayName' | 'createdAt'>;
 };
-type AuthenticationPayload = { user: Entity.User; session: Omit<BackendAuthenticationResponse, 'user'> };
+type AuthenticationPayload = { user: Entity.User; session: BackendAuthenticationSession | null };
 const ACCESS_TOKEN_COOKIE_KEY = 'accessToken';
 const REFRESH_TOKEN_COOKIE_KEY = 'refreshToken';
 
@@ -19,6 +26,22 @@ function resolveRuntimePlatform(): 'web' | 'mobile' {
 
 function shouldManageClientCookies(): boolean {
   return typeof document !== 'undefined' && resolveRuntimePlatform() === 'mobile';
+}
+
+function buildClientPlatformHeaders(): Record<string, string> {
+  return { 'x-client-platform': resolveRuntimePlatform() };
+}
+
+function extractMobileSession(
+  responseData: BackendAuthenticationResponse,
+): MobileAuthenticationSession | null {
+  const { accessToken, refreshToken, expiresAt } = responseData;
+
+  if (!accessToken || !refreshToken || !expiresAt) {
+    return null;
+  }
+
+  return { accessToken, refreshToken, expiresAt };
 }
 
 function resolveAccessTokenMaxAge(expiresAt: number | undefined): number {
@@ -94,14 +117,18 @@ export async function signInWithEmailAndPassword(
     const signInResponse = await requestBackend<BackendAuthenticationResponse>('/auth/sign-in', {
       method: 'POST',
       body: { email: emailAddress, password },
+      headers: buildClientPlatformHeaders(),
     });
     if (!signInResponse.success || !signInResponse.data) {
       return createErrorResponse(signInResponse.error ?? 'Email/password login failed.');
     }
 
-    setActiveAccessToken(signInResponse.data.accessToken, signInResponse.data.expiresAt);
-    setActiveRefreshToken(signInResponse.data.refreshToken);
-    const { user: backendUser, ...session } = signInResponse.data;
+    const session = extractMobileSession(signInResponse.data);
+    if (session) {
+      setActiveAccessToken(session.accessToken, session.expiresAt);
+      setActiveRefreshToken(session.refreshToken);
+    }
+    const { user: backendUser } = signInResponse.data;
 
     return {
       success: true,
@@ -129,6 +156,7 @@ export async function signOut(): Promise<Entity.ApiResponse<null>> {
   const signOutResponse = await requestBackend<null>('/auth/sign-out', {
     method: 'POST',
     credentials: 'include',
+    headers: buildClientPlatformHeaders(),
     ...(accessToken ? { accessToken } : {}),
   });
   setActiveAccessToken(null);
@@ -142,23 +170,29 @@ export async function getActiveSession(): Promise<Entity.ApiResponse<Authenticat
   const refreshResponse = await requestBackend<BackendAuthenticationResponse>('/auth/refresh', {
     method: 'POST',
     credentials: 'include',
+    headers: buildClientPlatformHeaders(),
   });
 
   if (!refreshResponse.success || !refreshResponse.data) {
     return { success: true, data: null, error: null };
   }
 
-  setActiveAccessToken(refreshResponse.data.accessToken, refreshResponse.data.expiresAt);
-  setActiveRefreshToken(refreshResponse.data.refreshToken);
-  const { user: backendUser, ...session } = refreshResponse.data;
+  const session = extractMobileSession(refreshResponse.data);
+  if (session) {
+    setActiveAccessToken(session.accessToken, session.expiresAt);
+    setActiveRefreshToken(session.refreshToken);
+  }
+  const { user: backendUser } = refreshResponse.data;
   return {
     success: true,
     data: {
       user: mapBackendUser(backendUser),
-      session: {
-        ...session,
-        refreshToken: getActiveRefreshToken() ?? session.refreshToken,
-      },
+      session: session
+        ? {
+            ...session,
+            refreshToken: getActiveRefreshToken() ?? session.refreshToken,
+          }
+        : null,
     },
     error: null,
   };

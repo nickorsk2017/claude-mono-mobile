@@ -2,7 +2,7 @@
 
 FROM node:20-alpine AS base
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
 
 # ─── Dependencies ─────────────────────────────────────────────────────────────
 FROM base AS dependencies
@@ -18,7 +18,7 @@ RUN pnpm build
 # ─── Runner ───────────────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
 COPY backend/app/package.json backend/app/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 COPY --from=builder /app/dist ./dist

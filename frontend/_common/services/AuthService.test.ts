@@ -25,10 +25,37 @@ describe('AuthService', () => {
     jest.resetModules();
     requestBackendMock.mockReset();
     document.cookie = '';
+    delete process.env.NEXT_PUBLIC_RUNTIME_PLATFORM;
   });
 
   describe('signInWithEmailAndPassword', () => {
-    it('maps backend user into Entity shape on success', async () => {
+    it('maps backend user into Entity shape on web without exposing tokens', async () => {
+      requestBackendMock.mockImplementation(async () => ({
+        success: true,
+        data: { user: backendUserRow },
+        error: null,
+      }));
+
+      const { signInWithEmailAndPassword } = await import('./AuthService');
+      const result = await signInWithEmailAndPassword('human@site.com', 'password-value');
+
+      expect(requestBackendMock).toHaveBeenCalledWith('/auth/sign-in', {
+        method: 'POST',
+        body: { email: 'human@site.com', password: 'password-value' },
+        headers: { 'x-client-platform': 'web' },
+      });
+      expect(result.success).toBe(true);
+      expect(result.error).toBeNull();
+      expect(result.data?.user).toEqual({
+        ...backendUserRow,
+        avatarUrl: null,
+        updatedAt: backendUserRow.createdAt,
+      });
+      expect(result.data?.session).toBeNull();
+    });
+
+    it('keeps token session data for mobile clients', async () => {
+      process.env.NEXT_PUBLIC_RUNTIME_PLATFORM = 'mobile';
       requestBackendMock.mockImplementation(async () => ({
         success: true,
         data: backendAuthenticationSuccessPayload,
@@ -41,13 +68,7 @@ describe('AuthService', () => {
       expect(requestBackendMock).toHaveBeenCalledWith('/auth/sign-in', {
         method: 'POST',
         body: { email: 'human@site.com', password: 'password-value' },
-      });
-      expect(result.success).toBe(true);
-      expect(result.error).toBeNull();
-      expect(result.data?.user).toEqual({
-        ...backendUserRow,
-        avatarUrl: null,
-        updatedAt: backendUserRow.createdAt,
+        headers: { 'x-client-platform': 'mobile' },
       });
       expect(result.data?.session).toMatchObject({
         accessToken: 'access-token-sample',
@@ -108,6 +129,7 @@ describe('AuthService', () => {
 
   describe('signOut', () => {
     it('includes access token from session after sign-in', async () => {
+      process.env.NEXT_PUBLIC_RUNTIME_PLATFORM = 'mobile';
       requestBackendMock
         .mockImplementationOnce(async () => ({
           success: true,
@@ -126,6 +148,7 @@ describe('AuthService', () => {
           method: 'POST',
           credentials: 'include',
           accessToken: 'access-token-sample',
+          headers: { 'x-client-platform': 'mobile' },
         }),
       );
     });
@@ -139,10 +162,12 @@ describe('AuthService', () => {
       expect(requestBackendMock).toHaveBeenCalledWith('/auth/sign-out', {
         method: 'POST',
         credentials: 'include',
+        headers: { 'x-client-platform': 'web' },
       });
     });
 
     it('preserves backend error envelope', async () => {
+      process.env.NEXT_PUBLIC_RUNTIME_PLATFORM = 'mobile';
       requestBackendMock
         .mockImplementationOnce(async () => ({
           success: true,
@@ -179,6 +204,7 @@ describe('AuthService', () => {
     });
 
     it('returns mapped session when refresh succeeds', async () => {
+      process.env.NEXT_PUBLIC_RUNTIME_PLATFORM = 'mobile';
       requestBackendMock.mockImplementation(async () => ({
         success: true,
         data: backendAuthenticationSuccessPayload,
@@ -190,7 +216,28 @@ describe('AuthService', () => {
 
       expect(result.success).toBe(true);
       expect(result.data?.user.email).toBe('human@site.com');
-      expect(result.data?.session.refreshToken).toBe('refresh-token-sample');
+      expect(result.data?.session).not.toBeNull();
+      expect(result.data?.session?.refreshToken).toBe('refresh-token-sample');
+    });
+
+    it('returns user without session tokens on web refresh', async () => {
+      requestBackendMock.mockImplementation(async () => ({
+        success: true,
+        data: { user: backendUserRow },
+        error: null,
+      }));
+
+      const { getActiveSession } = await import('./AuthService');
+      const result = await getActiveSession();
+
+      expect(requestBackendMock).toHaveBeenCalledWith('/auth/refresh', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'x-client-platform': 'web' },
+      });
+      expect(result.success).toBe(true);
+      expect(result.data?.user.email).toBe('human@site.com');
+      expect(result.data?.session).toBeNull();
     });
   });
 });

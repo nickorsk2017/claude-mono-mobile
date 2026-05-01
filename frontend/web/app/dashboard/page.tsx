@@ -1,8 +1,8 @@
-import { getServerUser } from '../../shared/lib/getServerUser';
+import { requireServerUser } from '../../shared/lib/getServerUser';
 import { DashboardView } from '../../shared/features/dashboard/DashboardView';
 
 export default async function DashboardPage() {
-  const user = await getServerUser();
+  const user = await requireServerUser();
 
-  return <DashboardView user={user!} />;
+  return <DashboardView user={user} />;
 }

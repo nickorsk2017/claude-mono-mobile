@@ -1,6 +1,10 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import AuthPage from './AuthPage';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+
+interface AuthenticationStoreSnapshot {
+  currentUser: { id: string } | null;
+}
 
 const replaceMock = jest.fn();
 
@@ -12,12 +16,17 @@ jest.mock('@common/shared/ui-kit', () => ({
   AuthForm: () => <div data-testid="auth-form">Auth Form</div>,
 }));
 
-const useAuthenticationStoreMock = jest.fn();
+const useAuthenticationStoreMock = jest.fn(
+  (selector: (state: AuthenticationStoreSnapshot) => unknown) =>
+    selector({ currentUser: null }),
+);
 
 jest.mock('@common/shared/stores/useAuthStore', () => ({
-  useAuthenticationStore: (selector: (state: { currentUser: { id: string } | null }) => unknown) =>
+  useAuthenticationStore: (selector: (state: AuthenticationStoreSnapshot) => unknown) =>
     useAuthenticationStoreMock(selector),
 }));
+
+const AuthPage = require('./AuthPage').default as typeof import('./AuthPage').default;
 
 describe('AuthPage', () => {
   beforeEach(() => {
@@ -27,19 +36,19 @@ describe('AuthPage', () => {
 
   it('renders auth form when user is not authenticated', () => {
     useAuthenticationStoreMock.mockImplementation(
-      (selector: (state: { currentUser: { id: string } | null }) => unknown) =>
+      (selector: (state: AuthenticationStoreSnapshot) => unknown) =>
         selector({ currentUser: null }),
     );
 
     render(<AuthPage />);
 
-    expect(screen.getByTestId('auth-form')).toBeInTheDocument();
+    expect(screen.getByTestId('auth-form')).toBeTruthy();
     expect(replaceMock).not.toHaveBeenCalled();
   });
 
   it('redirects to dashboard when user exists', () => {
     useAuthenticationStoreMock.mockImplementation(
-      (selector: (state: { currentUser: { id: string } | null }) => unknown) =>
+      (selector: (state: AuthenticationStoreSnapshot) => unknown) =>
         selector({ currentUser: { id: '1' } }),
     );
 

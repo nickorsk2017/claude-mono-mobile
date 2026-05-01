@@ -21,7 +21,7 @@ Monorepo for the Serene web app, Ionic mobile app, NestJS backend API, and share
 ## Requirements
 
 - Node.js 22+
-- pnpm 9.15.0
+- pnpm 10.33.2
 - Docker + Docker Compose (for containerised workflow)
 - Makefile
 
@@ -150,6 +150,12 @@ make pre-commit-check
 ```
 
 Git commits also run this automatically through the repository `pre-commit` hook.
+
+CI-equivalent local check:
+
+```bash
+make ci
+```
 
 ---
 

@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Headers, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthenticationService } from './authentication.service';
+import { buildSuccessResponse } from '../utils/response.builder';
 
 const ACCESS_TOKEN_COOKIE = 'accessToken';
 const REFRESH_TOKEN_COOKIE = 'refreshToken';
@@ -46,6 +47,23 @@ function clearAuthenticationCookies(response: Response): void {
   response.clearCookie(REFRESH_TOKEN_COOKIE, { path: '/' });
 }
 
+function resolveClientPlatform(clientPlatformHeader: string | undefined): 'web' | 'mobile' {
+  return clientPlatformHeader === 'mobile' ? 'mobile' : 'web';
+}
+
+function buildAuthenticationResponse(
+  session: Entity.AuthenticationResponse,
+  clientPlatform: 'web' | 'mobile',
+) {
+  if (clientPlatform === 'mobile') {
+    return buildSuccessResponse(session);
+  }
+
+  return buildSuccessResponse({
+    user: session.user,
+  });
+}
+
 @Controller('auth')
 export class AuthenticationController {
   constructor(private readonly authenticationService: AuthenticationService) {}
@@ -54,11 +72,15 @@ export class AuthenticationController {
   async signIn(
     @Body() credentials: Entity.SignInCredentials,
     @Res({ passthrough: true }) response: Response,
+    @Headers('x-client-platform') clientPlatformHeader?: string,
   ) {
     const result = await this.authenticationService.signIn(credentials);
+    const clientPlatform = resolveClientPlatform(clientPlatformHeader);
 
     if (result.success && result.data) {
       setAuthenticationCookies(response, result.data);
+
+      return buildAuthenticationResponse(result.data, clientPlatform);
     }
 
     return result;
@@ -80,12 +102,16 @@ export class AuthenticationController {
   async refreshSession(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
+    @Headers('x-client-platform') clientPlatformHeader?: string,
   ) {
     const refreshToken = (request.cookies as Record<string, string>)?.[REFRESH_TOKEN_COOKIE] ?? '';
     const result = await this.authenticationService.refreshSession({ refreshToken });
+    const clientPlatform = resolveClientPlatform(clientPlatformHeader);
 
     if (result.success && result.data) {
       setAuthenticationCookies(response, result.data);
+
+      return buildAuthenticationResponse(result.data, clientPlatform);
     }
 
     return result;
@@ -98,7 +124,10 @@ export class AuthenticationController {
     @Headers('authorization') authorizationHeader: string,
   ) {
     clearAuthenticationCookies(response);
-    const token = authorizationHeader?.slice(7) ?? '';
+    const token =
+      authorizationHeader?.slice(7) ??
+      (request.cookies as Record<string, string>)?.[ACCESS_TOKEN_COOKIE] ??
+      '';
 
     if (!token) {
       return { success: true, data: null, error: null };

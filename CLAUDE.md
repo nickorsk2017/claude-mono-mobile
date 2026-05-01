@@ -16,7 +16,7 @@ Each subdirectory has its own `CLAUDE.md` — read both.
 ```
 /
 ├── frontend/
-│   ├── package.json           # Workspace root — packageManager: pnpm@9.15.0
+│   ├── package.json           # Workspace root — packageManager: pnpm@10.33.2
 │   ├── pnpm-workspace.yaml    # Workspace package declarations
 │   ├── pnpm-lock.yaml         # Committed lockfile — never edit manually
 │   ├── tsconfig.json
@@ -134,7 +134,7 @@ The restriction applies only to shared entity contracts:
 
 ## Rule 5 — Package Manager (pnpm)
 
-**pnpm `9.15.0`** is the package manager for all services and workspaces.
+**pnpm `10.33.2`** is the package manager for all services and workspaces.
 
 ### Common commands
 
@@ -167,13 +167,13 @@ packages:
 "@common/services": "workspace:*"
 ```
 
-- `"packageManager": "pnpm@9.15.0"` pinned in every workspace root `package.json`
+- `"packageManager": "pnpm@10.33.2"` pinned in every workspace root `package.json`
 - `pnpm-lock.yaml` is always committed — never delete or edit it manually
 
 ### Docker installs
 
 ```dockerfile
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
 RUN pnpm install --frozen-lockfile
 ```
 

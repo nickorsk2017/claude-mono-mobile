@@ -10,6 +10,11 @@ export type ServerUser = {
 };
 
 const PUBLIC_PATHS = ['/auth'];
+const DEFAULT_BACKEND_URL = 'http://localhost:4000';
+
+function redirectToAuth(): never {
+  redirect('/auth');
+}
 
 export const getServerUser = cache(async (): Promise<ServerUser | null> => {
   const [cookieStore, headersList] = await Promise.all([cookies(), headers()]);
@@ -18,12 +23,12 @@ export const getServerUser = cache(async (): Promise<ServerUser | null> => {
   const isPublicPath = PUBLIC_PATHS.includes(pathname);
 
   if (!accessToken) {
-    if (!isPublicPath) {redirect('/auth');}
+    if (!isPublicPath) {redirectToAuth();}
 
     return null;
   }
 
-  const backendUrl = process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:4000';
+  const backendUrl = process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? DEFAULT_BACKEND_URL;
   let user: ServerUser | null = null;
 
   try {
@@ -41,9 +46,19 @@ export const getServerUser = cache(async (): Promise<ServerUser | null> => {
     user = null;
   }
 
-  if (!user && !isPublicPath) {redirect('/auth');}
+  if (!user && !isPublicPath) {redirectToAuth();}
 
   if (user && isPublicPath) {redirect('/dashboard');}
 
   return user;
 });
+
+export async function requireServerUser(): Promise<ServerUser> {
+  const user = await getServerUser();
+
+  if (!user) {
+    redirectToAuth();
+  }
+
+  return user;
+}

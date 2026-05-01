@@ -5,6 +5,7 @@ PNPM_CMD := env -u PNPM_STORE_DIR -u npm_config_store_dir pnpm
 .PHONY: help install backend-install frontend-install mobile-install ui-kit-install \
         backend api frontend web mobile \
         lint lint-fix \
+        ci \
         pre-commit-check \
         test test-backend test-web test-common test-mobile \
         test-coverage test-backend-coverage test-web-coverage test-common-coverage test-mobile-coverage \
@@ -34,6 +35,7 @@ help:
 	@echo "  make mobile-run-ios       - Build, sync, and run on iOS"
 	@echo "  make lint                 - Run backend + web + mobile linters"
 	@echo "  make lint-fix             - Run backend + web + mobile linters with --fix"
+	@echo "  make ci                   - Run lint + tests + backend build + frontend typecheck"
 	@echo "  make pre-commit-check     - Run lint + tests used by the git pre-commit hook"
 	@echo "  make test                 - Run all unit tests (backend, web, _common, mobile)"
 	@echo "  make test-backend         - Run backend api Jest tests"
@@ -104,6 +106,10 @@ lint-fix:
 	$(PNPM_CMD) --dir backend/app lint:fix
 	$(PNPM_CMD) --dir frontend/web lint:fix
 	$(PNPM_CMD) --dir frontend/mobile lint:fix
+
+ci: lint test
+	$(PNPM_CMD) --dir backend/app build
+	$(PNPM_CMD) --dir frontend typecheck
 
 pre-commit-check: lint test
 

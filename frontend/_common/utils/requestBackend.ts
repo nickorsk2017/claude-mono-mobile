@@ -3,6 +3,7 @@ type BackendRequestOptions = {
   body?: unknown;
   accessToken?: string;
   credentials?: RequestCredentials;
+  headers?: Record<string, string>;
 };
 
 function resolveBackendUrl(): string | undefined {
@@ -31,6 +32,7 @@ export async function requestBackend<DataType>(
       headers: {
         'Content-Type': 'application/json',
         ...(options.accessToken ? { Authorization: `Bearer ${options.accessToken}` } : {}),
+        ...options.headers,
       },
       ...(options.body ? { body: JSON.stringify(options.body) } : {}),
     });

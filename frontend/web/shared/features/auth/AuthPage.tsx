@@ -18,7 +18,7 @@ export default function AuthPage() {
   if (currentUser) { return null; }
 
   return (
-    <div className="md:min-h-screen  h-screen flex items-center justify-center bg-calm-background md:p-4">
+    <div className="h-screen items-center justify-center bg-calm-background md:min-h-screen md:p-4 flex">
       <AuthForm />
     </div>
   );
