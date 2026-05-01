@@ -39,6 +39,12 @@
       "@common/schemas/*": [
         "../_common/schemas/*"
       ],
+      "@common/ui-kit": [
+        "../_common/ui-kit/index.ts"
+      ],
+      "@common/ui-kit/*": [
+        "../_common/ui-kit/*"
+      ],
       "@/*": [
         "./*"
       ]

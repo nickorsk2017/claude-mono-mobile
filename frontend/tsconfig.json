@@ -3,6 +3,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "jsx": "react-jsx",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -14,8 +15,11 @@
       "@common/hooks/*": ["./_common/hooks/*"],
       "@common/services": ["./_common/services/index.ts"],
       "@common/services/*": ["./_common/services/*"],
+      "@common/utils": ["./_common/utils/index.ts"],
       "@common/utils/*": ["./_common/utils/*"],
-      "@common/schemas/*": ["./_common/schemas/*"]
+      "@common/schemas/*": ["./_common/schemas/*"],
+      "@common/ui-kit": ["./_common/ui-kit/index.ts"],
+      "@common/ui-kit/*": ["./_common/ui-kit/*"]
     }
   }
 }

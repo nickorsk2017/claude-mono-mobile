@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthentication } from '@common/hooks';
-import { Button, Icon } from '@/shared/ui-kit';
+import { Button, Icon } from '@common/ui-kit';
 import { signOut } from '@common/services';
 import type { ServerUser } from '@/shared/lib/getServerUser';
 

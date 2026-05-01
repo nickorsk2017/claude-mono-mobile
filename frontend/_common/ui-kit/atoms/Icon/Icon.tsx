@@ -1,5 +1,5 @@
 import React, { useMemo, CSSProperties } from 'react';
-import { softCalmTheme } from '../../../../../_common/themes/calm-theme';
+import { softCalmTheme } from '../../../themes/calm-theme';
 
 export type IconName =
   | 'mail'

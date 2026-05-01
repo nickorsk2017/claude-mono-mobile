@@ -1,5 +1,5 @@
 import React from 'react';
-import { ComponentSize, ThemeName } from '../../../../../_common/themes/calm-theme';
+import { ComponentSize, ThemeName } from '../../..//themes/calm-theme';
 
 export type LoadingSpinnerProps = {
   size?: ComponentSize;

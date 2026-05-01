@@ -2,11 +2,11 @@ SHELL := /bin/bash
 ENV_FILE := ./_common/.env
 PNPM_CMD := env -u PNPM_STORE_DIR -u npm_config_store_dir pnpm
 
-.PHONY: help install backend-install frontend-install \
-        backend api frontend web \
-        fullstack-web  \
+.PHONY: help install backend-install frontend-install mobile-install ui-kit-install \
+        backend api frontend web mobile \
+        fullstack-web fullstack-mobile \
         docker-build docker-up docker-down docker-restart \
-        kill-backend-ports kill-frontend-ports  kill-all-ports
+        kill-backend-ports kill-frontend-ports kill-mobile-ports kill-all-ports
 
 help:
 	@echo ""
@@ -14,11 +14,15 @@ help:
 	@echo "  make install              - Install all dependencies"
 	@echo "  make backend-install      - Install backend dependencies"
 	@echo "  make frontend-install     - Install frontend workspace dependencies"
+	@echo "  make ui-kit-install       - Install shared ui-kit workspace dependencies"
+	@echo "  make mobile-install       - Install mobile workspace dependencies"
 	@echo ""
 	@echo "Local dev:"
 	@echo "  make backend app        - Run backend api (:4000)"
 	@echo "  make web / frontend       - Run web app (:3000)"
+	@echo "  make mobile               - Run mobile shell (:8100)"
 	@echo "  make fullstack-web        - Run backend + web"
+	@echo "  make fullstack-mobile     - Run backend + mobile"
 	@echo ""
 	@echo "Docker:"
 	@echo "  make docker-build         - Build all service images"
@@ -28,19 +32,26 @@ help:
 	@echo ""
 	@echo "Ports:"
 	@echo "  make kill-backend-ports   - Kill port 4000"
-	@echo "  make kill-frontend-ports  - Kill ports 3000 and 8100"
-	@echo "  make kill-all-ports       - Kill ports 3000, 4000"
+	@echo "  make kill-frontend-ports  - Kill port 3000"
+	@echo "  make kill-mobile-ports    - Kill port 8100"
+	@echo "  make kill-all-ports       - Kill ports 3000, 4000, 8100"
 	@echo ""
 
 # ─── Install ──────────────────────────────────────────────────────────────────
 
-install: backend-install frontend-install
+install: backend-install frontend-install ui-kit-install mobile-install
 
 backend-install:
 	$(PNPM_CMD) --dir backend/app install
 
 frontend-install:
 	$(PNPM_CMD) --dir frontend install
+
+mobile-install:
+	$(PNPM_CMD) --dir frontend/mobile install
+
+ui-kit-install:
+	$(PNPM_CMD) --dir frontend --filter @common/ui-kit install
 
 # ─── Local dev ────────────────────────────────────────────────────────────────
 
@@ -51,11 +62,20 @@ backend: kill-backend-ports
 web: kill-frontend-ports
 	$(PNPM_CMD) --dir frontend dev:web
 
+mobile: kill-mobile-ports
+	$(PNPM_CMD) --dir frontend/mobile dev --host 0.0.0.0 --port 8100
+
 
 fullstack-web: kill-all-ports
 	@set -a; source $(ENV_FILE); set +a; \
 	  $(PNPM_CMD) --dir backend/app dev & \
 	  $(PNPM_CMD) --dir frontend dev:web & \
+	  wait
+
+fullstack-mobile: kill-all-ports
+	@set -a; source $(ENV_FILE); set +a; \
+	  $(PNPM_CMD) --dir backend/app dev & \
+	  $(PNPM_CMD) --dir frontend/mobile dev --host 0.0.0.0 --port 8100 & \
 	  wait
 
 # ─── Docker ───────────────────────────────────────────────────────────────────
@@ -90,6 +110,10 @@ kill-backend-ports:
 kill-frontend-ports:
 	$(call kill_port,3000)
 
+kill-mobile-ports:
+	$(call kill_port,8100)
+
 kill-all-ports:
 	$(call kill_port,3000)
 	$(call kill_port,4000)
+	$(call kill_port,8100)

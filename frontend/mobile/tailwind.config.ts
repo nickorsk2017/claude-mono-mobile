@@ -15,9 +15,8 @@ const calmColorPalette = {
 
 const tailwindConfiguration: Config = {
   content: [
-    './app/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './shared/**/*.{ts,tsx}',
+    './index.html',
+    './src/**/*.{ts,tsx}',
     '../_common/ui-kit/**/*.{ts,tsx}',
   ],
   theme: {

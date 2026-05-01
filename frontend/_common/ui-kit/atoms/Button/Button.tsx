@@ -1,20 +1,23 @@
 import React from 'react';
-import { ComponentSize } from '../../../../../_common/themes/calm-theme';
-import { cx } from '@common/utils';
+import { ComponentSize } from '../../../themes/calm-theme';
+import { cx } from '../../../utils';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 
 export type ButtonProps = {
+  type?: 'button' | 'submit' | 'reset';
   children: React.ReactNode;
-  onClick: () => void;
+  onClick?: () => void;
   variant?: ButtonVariant;
   size?: ComponentSize;
   disabled?: boolean;
   isLoading?: boolean;
   className?: string;
+  wide?: boolean;
 };
 
 export const Button = React.memo(function Button({
+  type = 'button',
   children,
   onClick,
   size = 'medium',
@@ -22,6 +25,7 @@ export const Button = React.memo(function Button({
   disabled = false,
   isLoading = false,
   className,
+  wide,
 }: ButtonProps) {
   const sizeClassMap: Record<ComponentSize, string> = {
     small: 'min-h-[34px] px-3.5 py-2 text-label rounded-[10px]',
@@ -38,14 +42,15 @@ export const Button = React.memo(function Button({
 
   return (
     <button
-      type="button"
+      type={type ?? 'button'}
       onClick={onClick}
       disabled={disabled || isLoading}
       className={cx(
-        'w-full border font-semibold transition-all duration-150',
+        'border font-semibold transition-all duration-150',
         sizeClassMap[size],
         variantClassMap[variant],
         className,
+        (wide === true || wide === undefined) ? 'w-full' : 'w-auto',
         disabled || isLoading ? 'cursor-not-allowed opacity-50' : '!cursor-pointer hover:brightness-95',
       )}
     >

@@ -17,24 +17,15 @@ function resolveBackendUrl(): string | undefined {
   );
 }
 
-function getTokenStorage(): Storage | null {
-  if (typeof globalThis === 'undefined' || !('localStorage' in globalThis)) return null;
-  return globalThis.localStorage;
-}
 
 function setActiveAccessToken(nextToken: string | null): void {
   activeAccessToken = nextToken;
-  if (typeof document !== 'undefined') {
-    if (nextToken) {
-      document.cookie = `accessToken=${encodeURIComponent(nextToken)}; path=/; max-age=3600; SameSite=Strict`;
-    } else {
-      document.cookie = 'accessToken=; path=/; max-age=0; SameSite=Strict';
-    }
+  if (typeof document === 'undefined') return;
+  if (nextToken) {
+    document.cookie = `accessToken=${encodeURIComponent(nextToken)}; path=/; max-age=3600; SameSite=Strict`;
+  } else {
+    document.cookie = 'accessToken=; path=/; max-age=0; SameSite=Strict';
   }
-  const tokenStorage = getTokenStorage();
-  if (!tokenStorage) return;
-  if (nextToken) tokenStorage.setItem('accessToken', nextToken);
-  else tokenStorage.removeItem('accessToken');
 }
 
 function getActiveAccessToken(): string | null {
@@ -46,10 +37,7 @@ function getActiveAccessToken(): string | null {
       return activeAccessToken;
     }
   }
-  const tokenStorage = getTokenStorage();
-  const storedToken = tokenStorage?.getItem('accessToken') ?? null;
-  activeAccessToken = storedToken;
-  return storedToken;
+  return null;
 }
 
 function setActiveRefreshToken(nextToken: string | null): void {

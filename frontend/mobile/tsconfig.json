@@ -1,0 +1,37 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "allowJs": false,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "paths": {
+      "@common/types/*": ["../_common/types/*"],
+      "@common/stores/*": ["../_common/stores/*"],
+      "@common/hooks": ["../_common/hooks/index.ts"],
+      "@common/hooks/*": ["../_common/hooks/*"],
+      "@common/services": ["../_common/services/index.ts"],
+      "@common/services/*": ["../_common/services/*"],
+      "@common/utils": ["../_common/utils/index.ts"],
+      "@common/utils/*": ["../_common/utils/*"],
+      "@common/schemas/*": ["../_common/schemas/*"],
+      "@common/ui-kit": ["../_common/ui-kit/index.ts"],
+      "@common/ui-kit/*": ["../_common/ui-kit/*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "../_common/types/**/*.d.ts",
+    "../_common/hooks/**/*.ts",
+    "../_common/services/**/*.ts",
+    "../_common/stores/**/*.ts",
+    "../_common/utils/**/*.ts",
+    "../_common/schemas/**/*.ts",
+    "../_common/ui-kit/**/*.ts",
+    "../_common/ui-kit/**/*.tsx"
+  ],
+  "exclude": ["node_modules", "dist"]
+}

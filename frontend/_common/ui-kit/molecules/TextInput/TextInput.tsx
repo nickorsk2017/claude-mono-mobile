@@ -1,6 +1,6 @@
 import React, { useId, useState } from 'react';
 import { Icon } from '../../atoms/Icon/Icon';
-import { ComponentSize } from '../../../../../_common/themes/calm-theme';
+import { ComponentSize } from '../../../themes/calm-theme';
 
 type InputType = 'text' | 'password';
 
@@ -11,9 +11,9 @@ export type TextInputProps = {
   label?: string;
   type?: InputType;
   size?: ComponentSize;
-  hasError?: boolean;
   errorMessage?: string;
   autoFocus?: boolean;
+  autoComplete?: string;
 };
 
 export default React.memo(function TextInput({
@@ -23,9 +23,9 @@ export default React.memo(function TextInput({
   label,
   type = 'text',
   size = 'medium',
-  hasError = false,
   errorMessage,
   autoFocus = false,
+  autoComplete = 'off',
 }: TextInputProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const id = useId();
@@ -36,7 +36,7 @@ export default React.memo(function TextInput({
     medium: 'min-h-[42px] px-3 py-[10px] text-body',
     large: 'min-h-[48px] px-[14px] py-3 text-medium',
   };
-  const inputClass = hasError
+  const inputClass = !!errorMessage
     ? 'border-calm-error bg-calm-surface text-calm-text'
     : 'border-calm-border bg-calm-surface text-calm-text';
 
@@ -49,6 +49,7 @@ export default React.memo(function TextInput({
           value={value}
           placeholder={placeholder}
           autoFocus={autoFocus}
+          autoComplete={autoComplete}
           onChange={(event) => onChange(event.target.value)}
           className={`w-full rounded-xl border outline-none ${sizeClassMap[size]} ${inputClass}`}
         />
@@ -62,7 +63,7 @@ export default React.memo(function TextInput({
           </button>
         ) : null}
       </div>
-      {hasError && errorMessage ? <span className="text-caption text-calm-error">{errorMessage}</span> : null}
+      {errorMessage ? <span className="text-caption text-calm-error">{errorMessage}</span> : null}
     </div>
   );
 });

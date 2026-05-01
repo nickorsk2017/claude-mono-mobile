@@ -21,6 +21,28 @@ services:
     networks:
       - internal
 
+  mobile:
+    build:
+      context: ./frontend
+      dockerfile: mobile/Dockerfile
+    image: claude-arch/mobile:local
+    container_name: claude-arch-mobile
+    ports:
+      - "8100:8100"
+    env_file:
+      - ./_common/.env
+    environment:
+      - NODE_ENV=development
+      - BACKEND_URL=http://api:4000
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:4000
+      - EXPO_PUBLIC_BACKEND_URL=http://localhost:4000
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - internal
+
   api:
     build:
       context: .
