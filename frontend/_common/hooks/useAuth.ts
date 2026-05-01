@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
-import { signInWithEmailAndPassword, signOut } from '@common/services';
-import { useAuthenticationStore } from '@common/stores/useAuthStore';
+import { signInWithEmailAndPassword, signOut } from '@common/shared/services';
+import { useAuthenticationStore } from '@common/shared/stores/useAuthStore';
 
 export function useAuthentication() {
   const setCurrentUser = useAuthenticationStore((state) => state.setCurrentUser);

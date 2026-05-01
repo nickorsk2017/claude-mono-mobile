@@ -3,9 +3,9 @@
 import React, { useCallback, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useSignUp } from '@common/hooks';
-import { signUpWithEmailAndPassword } from '@common/services';
-import { signUpValidationSchema } from '@common/schemas/auth.zod';
+import { useSignUp } from '@common/shared/hooks';
+import { signUpWithEmailAndPassword } from '@common/shared/services';
+import { signUpValidationSchema } from '@common/shared/schemas/auth.zod';
 import Button from '../../../atoms/Button/Button';
 import TextInput from '../../../molecules/TextInput/TextInput';
 

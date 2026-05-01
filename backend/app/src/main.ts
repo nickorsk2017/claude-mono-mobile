@@ -9,7 +9,12 @@ async function bootstrap(): Promise<void> {
   const configService = application.get(ConfigService);
 
   const port = configService.get<number>('BACKEND_PORT') ?? 4000;
-  const corsOrigin = configService.get<string>('BACKEND_CORS_ORIGIN') ?? '*';
+  const corsOriginValue = configService.get<string>('BACKEND_CORS_ORIGIN') ?? '*';
+  const corsOrigins = corsOriginValue
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
+  const corsOrigin = corsOrigins.includes('*') ? '*' : corsOrigins;
 
   application.use(cookieParser());
   application.enableCors({ origin: corsOrigin, credentials: true });

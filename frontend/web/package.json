@@ -12,12 +12,7 @@
     "lint:fix": "eslint . --ext .ts,.tsx --fix"
   },
   "dependencies": {
-    "@common/hooks": "workspace:*",
-    "@common/ui-kit": "workspace:*",
-    "@common/schemas": "workspace:*",
-    "@common/services": "workspace:*",
-    "@common/stores": "workspace:*",
-    "@common/utils": "workspace:*",
+    "@common/shared": "workspace:*",
     "@hookform/resolvers": "^3.9.0",
     "@supabase/supabase-js": "^2.0.0",
     "next": "^16.2.4",

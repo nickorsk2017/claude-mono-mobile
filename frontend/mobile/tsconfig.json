@@ -9,16 +9,7 @@
     "isolatedModules": true,
     "paths": {
       "@common/types/*": ["../_common/types/*"],
-      "@common/stores/*": ["../_common/stores/*"],
-      "@common/hooks": ["../_common/hooks/index.ts"],
-      "@common/hooks/*": ["../_common/hooks/*"],
-      "@common/services": ["../_common/services/index.ts"],
-      "@common/services/*": ["../_common/services/*"],
-      "@common/utils": ["../_common/utils/index.ts"],
-      "@common/utils/*": ["../_common/utils/*"],
-      "@common/schemas/*": ["../_common/schemas/*"],
-      "@common/ui-kit": ["../_common/ui-kit/index.ts"],
-      "@common/ui-kit/*": ["../_common/ui-kit/*"]
+      "@common/shared/*": ["../_common/*"]
     }
   },
   "include": [

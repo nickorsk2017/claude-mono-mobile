@@ -2,8 +2,8 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthenticationStore } from '@common/stores/useAuthStore';
-import { AuthForm } from '@common/ui-kit';
+import { useAuthenticationStore } from '@common/shared/stores/useAuthStore';
+import { AuthForm } from '@common/shared/ui-kit';
 
 export default function AuthPage() {
   const router = useRouter();

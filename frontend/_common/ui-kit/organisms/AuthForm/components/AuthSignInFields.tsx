@@ -3,8 +3,8 @@
 import React, { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuthentication } from '@common/hooks';
-import { signInValidationSchema } from '@common/schemas/auth.zod';
+import { useAuthentication } from '@common/shared/hooks';
+import { signInValidationSchema } from '@common/shared/schemas/auth.zod';
 import Button from '../../../atoms/Button/Button';
 import TextInput from '../../../molecules/TextInput/TextInput';
 

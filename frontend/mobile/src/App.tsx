@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { getActiveSession } from '@common/services';
-import { useAuthenticationStore } from '@common/stores/useAuthStore';
+import { getActiveSession } from '@common/shared/services';
+import { useAuthenticationStore } from '@common/shared/stores/useAuthStore';
 import { AuthPage } from './pages/AuthPage';
 import { DashboardPage } from './pages/DashboardPage';
 

@@ -1,4 +1,4 @@
-import { requestBackend } from '@common/utils';
+import { requestBackend } from '@common/shared/utils';
 
 type BackendAuthenticationResponse = {
   accessToken: string;
@@ -125,6 +125,7 @@ export async function signOut(): Promise<Entity.ApiResponse<null>> {
   });
   setActiveAccessToken(null);
   setActiveRefreshToken(null);
+
   if (!signOutResponse.success) return { success: false, data: null, error: signOutResponse.error };
   return { success: true, data: null, error: null };
 }

@@ -1,0 +1,25 @@
+{
+  "name": "@common/shared",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "storybook": "storybook dev -p 6006 -c ui-kit/.storybook",
+    "build-storybook": "storybook build -c ui-kit/.storybook"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
+    "react": "19.2.0",
+    "react-hook-form": "^7.56.0",
+    "zod": "^3.23.8",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "^10.3.6",
+    "@storybook/addon-docs": "^10.3.6",
+    "@storybook/addon-links": "^10.3.6",
+    "@storybook/react": "^10.3.6",
+    "@storybook/react-vite": "^10.3.6",
+    "storybook": "^10.3.6"
+  }
+}
