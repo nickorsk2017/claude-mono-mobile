@@ -1,3 +1,5 @@
+import { requestBackend } from '@common/utils';
+
 type BackendAuthenticationResponse = {
   accessToken: string;
   refreshToken: string;
@@ -5,54 +7,60 @@ type BackendAuthenticationResponse = {
   user: Pick<Entity.User, 'id' | 'email' | 'displayName' | 'createdAt'>;
 };
 type AuthenticationPayload = { user: Entity.User; session: Omit<BackendAuthenticationResponse, 'user'> };
+const ACCESS_TOKEN_COOKIE_KEY = 'accessToken';
+const REFRESH_TOKEN_COOKIE_KEY = 'refreshToken';
 
 let activeAccessToken: string | null = null;
+let activeRefreshToken: string | null = null;
 
-function resolveBackendUrl(): string | undefined {
-  return (
-    process.env.NEXT_PUBLIC_BACKEND_URL ??
-    process.env.BACKEND_URL ??
-    'http://localhost:4000'
-  );
+function resolveAccessTokenMaxAge(expiresAt: number | undefined): number {
+  if (!expiresAt) return 3600;
+
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  const expiresAtInSeconds = expiresAt > 10_000_000_000 ? Math.floor(expiresAt / 1000) : expiresAt;
+  const computedMaxAge = expiresAtInSeconds - nowInSeconds;
+
+  return computedMaxAge > 0 ? computedMaxAge : 1;
 }
 
-
-function setActiveAccessToken(nextToken: string | null): void {
+function setActiveAccessToken(nextToken: string | null, expiresAt?: number): void {
   activeAccessToken = nextToken;
   if (typeof document === 'undefined') return;
   if (nextToken) {
-    document.cookie = `accessToken=${encodeURIComponent(nextToken)}; path=/; max-age=3600; SameSite=Strict`;
+    const accessTokenMaxAge = resolveAccessTokenMaxAge(expiresAt);
+    document.cookie = `${ACCESS_TOKEN_COOKIE_KEY}=${encodeURIComponent(nextToken)}; path=/; max-age=${accessTokenMaxAge}; SameSite=Strict`;
   } else {
-    document.cookie = 'accessToken=; path=/; max-age=0; SameSite=Strict';
+    document.cookie = `${ACCESS_TOKEN_COOKIE_KEY}=; path=/; max-age=0; SameSite=Strict`;
   }
 }
 
 function getActiveAccessToken(): string | null {
   if (activeAccessToken) return activeAccessToken;
-  if (typeof document !== 'undefined') {
-    const cookieMatch = document.cookie.match(/(?:^|;\s*)accessToken=([^;]*)/);
-    if (cookieMatch) {
-      activeAccessToken = decodeURIComponent(cookieMatch[1]);
-      return activeAccessToken;
-    }
-  }
-  return null;
+  if (typeof document === 'undefined') return null;
+  const cookieMatch = document.cookie.match(new RegExp(`(?:^|;\\s*)${ACCESS_TOKEN_COOKIE_KEY}=([^;]*)`));
+  if (!cookieMatch) return null;
+  activeAccessToken = decodeURIComponent(cookieMatch[1]);
+  return activeAccessToken;
 }
 
 function setActiveRefreshToken(nextToken: string | null): void {
+  activeRefreshToken = nextToken;
   if (typeof document === 'undefined') return;
   if (nextToken) {
     const thirtyDaysInSeconds = 60 * 60 * 24 * 30;
-    document.cookie = `refreshToken=${encodeURIComponent(nextToken)}; path=/; max-age=${thirtyDaysInSeconds}; SameSite=Strict`;
+    document.cookie = `${REFRESH_TOKEN_COOKIE_KEY}=${encodeURIComponent(nextToken)}; path=/; max-age=${thirtyDaysInSeconds}; SameSite=Strict`;
   } else {
-    document.cookie = 'refreshToken=; path=/; max-age=0; SameSite=Strict';
+    document.cookie = `${REFRESH_TOKEN_COOKIE_KEY}=; path=/; max-age=0; SameSite=Strict`;
   }
 }
 
 function getActiveRefreshToken(): string | null {
+  if (activeRefreshToken) return activeRefreshToken;
   if (typeof document === 'undefined') return null;
-  const cookieMatch = document.cookie.match(/(?:^|;\s*)refreshToken=([^;]*)/);
-  return cookieMatch ? decodeURIComponent(cookieMatch[1]) : null;
+  const cookieMatch = document.cookie.match(new RegExp(`(?:^|;\\s*)${REFRESH_TOKEN_COOKIE_KEY}=([^;]*)`));
+  if (!cookieMatch) return null;
+  activeRefreshToken = decodeURIComponent(cookieMatch[1]);
+  return activeRefreshToken;
 }
 
 function mapBackendUser(backendUser: BackendAuthenticationResponse['user']): Entity.User {
@@ -70,35 +78,6 @@ function createErrorResponse<DataType>(message: string): Entity.ApiResponse<Data
   return { success: false, data: null as DataType, error: message };
 }
 
-async function requestBackend<DataType>(
-  pathname: string,
-  options: { method: string; body?: unknown; accessToken?: string },
-): Promise<Entity.ApiResponse<DataType>> {
-  const backendUrl = resolveBackendUrl();
-  
-  if (!backendUrl) return createErrorResponse<DataType>('Missing backend configuration.');
-  try {
-    const response = await fetch(`${backendUrl}${pathname}`, {
-      method: options.method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options.accessToken ? { Authorization: `Bearer ${options.accessToken}` } : {}),
-      },
-      ...(options.body ? { body: JSON.stringify(options.body) } : {}),
-    });
-
-    const parsedResponse = (await response.json()) as Entity.ApiResponse<DataType>;
-
-    if (!response.ok || !parsedResponse.success) {
-      return createErrorResponse(parsedResponse.error ?? `Request failed (${response.status}).`);
-    }
-
-    return parsedResponse;
-  } catch (error) {
-    return createErrorResponse(error instanceof Error ? error.message : 'Request failed.');
-  }
-}
-
 export async function signInWithEmailAndPassword(
   emailAddress: string,
   password: string,
@@ -112,7 +91,7 @@ export async function signInWithEmailAndPassword(
       return createErrorResponse(signInResponse.error ?? 'Email/password login failed.');
     }
 
-    setActiveAccessToken(signInResponse.data.accessToken);
+    setActiveAccessToken(signInResponse.data.accessToken, signInResponse.data.expiresAt);
     setActiveRefreshToken(signInResponse.data.refreshToken);
     const { user: backendUser, ...session } = signInResponse.data;
 
@@ -130,49 +109,48 @@ export async function signUpWithEmailAndPassword(
   emailAddress: string,
   password: string,
   displayName: string,
-): Promise<Entity.ApiResponse<AuthenticationPayload>> {
-  const signUpResponse = await requestBackend<{ userId: string }>('/auth/sign-up', {
+): Promise<Entity.ApiResponse<{ userId: string }>> {
+  return requestBackend<{ userId: string }>('/auth/sign-up', {
     method: 'POST',
     body: { email: emailAddress, password, displayName },
   });
-  if (!signUpResponse.success) return createErrorResponse(signUpResponse.error ?? 'Sign-up failed.');
-  return signInWithEmailAndPassword(emailAddress, password);
 }
 
 export async function signOut(): Promise<Entity.ApiResponse<null>> {
   const accessToken = getActiveAccessToken();
-  if (!accessToken) return { success: true, data: null, error: null };
   const signOutResponse = await requestBackend<null>('/auth/sign-out', {
     method: 'POST',
-    accessToken,
+    credentials: 'include',
+    ...(accessToken ? { accessToken } : {}),
   });
-  if (!signOutResponse.success) return { success: false, data: null, error: signOutResponse.error };
   setActiveAccessToken(null);
   setActiveRefreshToken(null);
+  if (!signOutResponse.success) return { success: false, data: null, error: signOutResponse.error };
   return { success: true, data: null, error: null };
 }
 
 export async function getActiveSession(): Promise<Entity.ApiResponse<AuthenticationPayload | null>> {
-  const accessToken = getActiveAccessToken();
-  if (!accessToken) return { success: true, data: null, error: null };
-
-  const response = await requestBackend<BackendAuthenticationResponse['user']>('/auth/session', {
-    method: 'GET',
-    accessToken,
+  const refreshResponse = await requestBackend<BackendAuthenticationResponse>('/auth/refresh', {
+    method: 'POST',
+    credentials: 'include',
   });
 
-  if (!response.success || !response.data) return { success: true, data: null, error: null };
+  if (!refreshResponse.success || !refreshResponse.data) {
+    return { success: true, data: null, error: null };
+  }
 
+  setActiveAccessToken(refreshResponse.data.accessToken, refreshResponse.data.expiresAt);
+  setActiveRefreshToken(refreshResponse.data.refreshToken);
+  const { user: backendUser, ...session } = refreshResponse.data;
   return {
     success: true,
     data: {
-      user: mapBackendUser(response.data),
-      session: { accessToken, refreshToken: getActiveRefreshToken() ?? '', expiresAt: 0 },
+      user: mapBackendUser(backendUser),
+      session: {
+        ...session,
+        refreshToken: getActiveRefreshToken() ?? session.refreshToken,
+      },
     },
     error: null,
   };
-}
-
-export async function signInWithGoogle(): Promise<Entity.ApiResponse<{ redirectToUrl: string | null }>> {
-  return createErrorResponse('Google sign-in is not implemented through backend yet.');
 }

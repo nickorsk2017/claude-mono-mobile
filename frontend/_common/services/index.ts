@@ -3,5 +3,4 @@ export {
   signUpWithEmailAndPassword,
   signOut,
   getActiveSession,
-  signInWithGoogle,
 } from './AuthService';

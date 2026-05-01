@@ -120,9 +120,15 @@ declare global {
 }
 ```
 
-### 4.3 — No `*.d.ts` outside `frontend/_common/types/`
+### 4.3 — Local `*.d.ts` files are allowed
 
-Banned from: `frontend/web/`, `frontend/mobile/`, `backend/`, repo root.
+Local declaration files are allowed inside feature/app packages when they are package-specific (for example framework typing gaps or local module augmentation).
+
+The restriction applies only to shared entity contracts:
+
+- Shared entity types used by both **web** and **mobile** must live in `frontend/_common/types/*.d.ts`
+- Shared entity types must remain inside `declare global { namespace Entity {} }`
+- Do not duplicate shared entity contracts in app-local `*.d.ts` files
 
 ---
 
@@ -190,6 +196,14 @@ RUN pnpm install --frozen-lockfile
 - `docker-compose.yml` at repo root is the only way to run all services together
 - Multi-stage builds required: `dependencies → builder → runner`
 - Always install with `pnpm install --frozen-lockfile` — never copy `node_modules` into the image
+
+---
+
+## Rule 8 — CI/CD
+
+This repository is a **git template**. GitHub Actions and GitLab CI pipelines are intentionally not defined here — they will be configured in each project created from this template according to its specific requirements.
+
+- Do not add `.github/workflows/` or `.gitlab-ci.yml` to this repository.
 
 ---
 

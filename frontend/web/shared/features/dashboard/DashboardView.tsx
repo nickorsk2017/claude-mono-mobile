@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthentication } from '@common/hooks';
 import { Button, Icon } from '@common/ui-kit';
-import { signOut } from '@common/services';
 import type { ServerUser } from '@/shared/lib/getServerUser';
 
 interface DashboardViewProps {
@@ -12,15 +11,10 @@ interface DashboardViewProps {
 }
 
 export const DashboardView = React.memo(function DashboardView({ user }: DashboardViewProps) {
-  const currentUser = user;;
+  const currentUser = user;
   const router = useRouter();
 
-  const authenticationClient = useMemo(
-    () => ({ signIn: async () => ({ success: false, data: null as never, error: 'Not used' }), signOut }),
-    [],
-  );
-
-  const { logout, isAuthenticating } = useAuthentication(authenticationClient);
+  const { logout, isAuthenticating } = useAuthentication();
   const handleSignOut = useCallback(async () => {
     const didSignOut = await logout();
     if (didSignOut) {

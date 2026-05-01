@@ -23,7 +23,11 @@ const initialSignUpFormValues: SignUpFormValues = {
   confirmPassword: '',
 };
 
-export const AuthSignUpFields = React.memo(function AuthSignUpFields() {
+interface AuthSignUpFieldsProps {
+  onSignedUp?: () => void;
+}
+
+export const AuthSignUpFields = React.memo(function AuthSignUpFields({ onSignedUp }: AuthSignUpFieldsProps) {
   const signUpForm = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpValidationSchema),
     defaultValues: initialSignUpFormValues,
@@ -43,7 +47,11 @@ export const AuthSignUpFields = React.memo(function AuthSignUpFields() {
   );
 
   const handleSignUpSubmit = signUpForm.handleSubmit(async (values) => {
-    await signUp(values);
+    const signUpResponse = await signUp(values);
+    if (signUpResponse.success) {
+      signUpForm.reset(initialSignUpFormValues);
+      onSignedUp?.();
+    }
   });
 
   const fields: Array<{ name: keyof SignUpFormValues; placeholder: string; type?: 'password' }> = [

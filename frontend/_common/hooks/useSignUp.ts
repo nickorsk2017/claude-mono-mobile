@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { useAuthenticationStore } from '@common/stores/useAuthStore';
 
 interface SignUpServiceClient {
   signUp: (
@@ -16,24 +15,15 @@ interface SignUpFormValues {
 }
 
 export function useSignUp(signUpServiceClient: SignUpServiceClient) {
-  const setCurrentUser = useAuthenticationStore((state) => state.setCurrentUser);
-
   const signUp = useCallback(
     async (formValues: SignUpFormValues) => {
-      const signUpResponse = await signUpServiceClient.signUp(
+      return signUpServiceClient.signUp(
         formValues.emailAddress,
         formValues.password,
         formValues.displayName,
       );
-      if (!signUpResponse.success) {
-        return signUpResponse;
-      }
-
-      const responseData = signUpResponse.data as { user?: Entity.User } | null;
-      setCurrentUser(responseData?.user ?? null);
-      return signUpResponse;
     },
-    [signUpServiceClient, setCurrentUser],
+    [signUpServiceClient],
   );
 
   return { signUp };

@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { useAuthentication } from '../../hooks';
-import { signOut } from '../../services';
 import { useAuthenticationStore } from '../../stores/useAuthStore';
 
 interface DashboardOrganismProps {
@@ -11,11 +10,7 @@ interface DashboardOrganismProps {
 
 export const DashboardOrganism = React.memo(function DashboardOrganism({ onSignedOut }: DashboardOrganismProps) {
   const currentUser = useAuthenticationStore((state) => state.currentUser);
-  const authenticationClient = useMemo(
-    () => ({ signIn: async () => ({ success: false, data: null as never, error: 'Not used' }), signOut }),
-    [],
-  );
-  const { logout, isAuthenticating } = useAuthentication(authenticationClient);
+  const { logout, isAuthenticating } = useAuthentication();
 
   const handleSignOut = useCallback(async () => {
     const didSignOut = await logout();

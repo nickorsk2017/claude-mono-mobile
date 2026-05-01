@@ -50,39 +50,18 @@ export class AuthenticationService {
   }
 
   async getSession(accessToken: string): Promise<ServiceResponse<Entity.AuthenticationUserProfile>> {
-    try {
-      const tokenParts = accessToken.split('.');
-      if (tokenParts.length !== 3) {
-        return buildErrorResponse('Invalid token format');
-      }
+    const { data, error } = await this.supabaseService.adminClient.auth.getUser(accessToken);
 
-      const payloadJson = Buffer.from(tokenParts[1], 'base64url').toString('utf-8');
-      const payload = JSON.parse(payloadJson) as {
-        sub?: string;
-        email?: string;
-        exp?: number;
-        iat?: number;
-        user_metadata?: { display_name?: string };
-      };
-
-      if (!payload.sub) {
-        return buildErrorResponse('Invalid token');
-      }
-
-      const nowInSeconds = Math.floor(Date.now() / 1000);
-      if (payload.exp && payload.exp < nowInSeconds) {
-        return buildErrorResponse('Session expired');
-      }
-
-      return buildSuccessResponse({
-        id: payload.sub,
-        email: payload.email ?? '',
-        displayName: payload.user_metadata?.display_name ?? '',
-        createdAt: new Date((payload.iat ?? 0) * 1000).toISOString(),
-      });
-    } catch {
-      return buildErrorResponse('Invalid or expired session');
+    if (error || !data.user) {
+      return buildErrorResponse(error?.message ?? 'Invalid or expired session');
     }
+
+    return buildSuccessResponse({
+      id: data.user.id,
+      email: data.user.email ?? '',
+      displayName: data.user.user_metadata?.['display_name'] ?? '',
+      createdAt: data.user.created_at,
+    });
   }
 
   async refreshSession(
@@ -110,14 +89,7 @@ export class AuthenticationService {
   }
 
   async signOut(accessToken: string): Promise<ServiceResponse<null>> {
-    const supabaseClient = this.supabaseService.authClient;
-
-    await supabaseClient.auth.setSession({
-      access_token: accessToken,
-      refresh_token: '',
-    });
-
-    const { error } = await supabaseClient.auth.signOut();
+    const { error } = await this.supabaseService.adminClient.auth.admin.signOut(accessToken);
 
     if (error) {
       return buildErrorResponse(error.message);

@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuthentication } from '@common/hooks';
-import { signInWithEmailAndPassword, signOut } from '@common/services';
 import { signInValidationSchema } from '@common/schemas/auth.zod';
-import { Button, TextInput } from '@common/ui-kit';
+import Button from '../../../atoms/Button/Button';
+import TextInput from '../../../molecules/TextInput/TextInput';
 
 interface SignInFormValues {
   emailAddress: string;
@@ -23,8 +23,7 @@ export const AuthSignInFields = React.memo(function AuthSignInFields() {
     reValidateMode: 'onChange',
   });
 
-  const authenticationClient = useMemo(() => ({ signIn: signInWithEmailAndPassword, signOut }), []);
-  const { login, isAuthenticating, authenticationError } = useAuthentication(authenticationClient);
+  const { login, isAuthenticating, authenticationError } = useAuthentication();
   const formValues = signInForm.watch();
   const { errors, isSubmitted } = signInForm.formState;
 
@@ -44,14 +43,14 @@ export const AuthSignInFields = React.memo(function AuthSignInFields() {
       {authenticationError ? <div className="bg-calm-error-light text-calm-error rounded-xl p-4 text-sm">{authenticationError}</div> : null}
       <TextInput
         value={formValues.emailAddress}
-        onChange={(value) => handleFormFieldChange('emailAddress', value)}
+        onChange={(value: string) => handleFormFieldChange('emailAddress', value)}
         placeholder="Your e-mail"
         autoComplete="email"
         errorMessage={errors.emailAddress?.message as string}
       />
       <TextInput
         value={formValues.password}
-        onChange={(value) => handleFormFieldChange('password', value)}
+        onChange={(value: string) => handleFormFieldChange('password', value)}
         placeholder="Password"
         type="password"
         autoComplete="current-password"

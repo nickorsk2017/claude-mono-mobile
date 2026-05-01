@@ -1,12 +1,8 @@
 import { useCallback, useState } from 'react';
+import { signInWithEmailAndPassword, signOut } from '@common/services';
 import { useAuthenticationStore } from '@common/stores/useAuthStore';
 
-interface AuthenticationClient {
-  signIn: (email: string, password: string) => Promise<{ success: boolean; data: unknown; error: string | null }>;
-  signOut: () => Promise<{ success: boolean; data: unknown; error: string | null }>;
-}
-
-export function useAuthentication(authenticationClient: AuthenticationClient) {
+export function useAuthentication() {
   const setCurrentUser = useAuthenticationStore((state) => state.setCurrentUser);
   const clearCurrentUser = useAuthenticationStore((state) => state.clearCurrentUser);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -20,33 +16,42 @@ export function useAuthentication(authenticationClient: AuthenticationClient) {
     async ({ email, password }: { email: string; password: string }) => {
       setIsAuthenticating(true);
       setAuthenticationError(null);
-      const authenticationResponse = await authenticationClient.signIn(email, password);
-      if (!authenticationResponse.success) {
-        setAuthenticationError(authenticationResponse.error ?? 'Unable to sign in.');
-        setIsAuthenticating(false);
-        return;
-      }
+      try {
+        const authenticationResponse = await signInWithEmailAndPassword(email, password);
+        if (!authenticationResponse.success) {
+          setAuthenticationError(authenticationResponse.error ?? 'Unable to sign in.');
+          return;
+        }
 
-      const responseData = authenticationResponse.data as { user?: Entity.User } | null;
-      setCurrentUser(responseData?.user ?? null);
-      setIsAuthenticating(false);
+        const responseData = authenticationResponse.data as { user?: Entity.User } | null;
+        setCurrentUser(responseData?.user ?? null);
+      } catch (error) {
+        setAuthenticationError(error instanceof Error ? error.message : 'Unable to sign in.');
+      } finally {
+        setIsAuthenticating(false);
+      }
     },
-    [authenticationClient, setCurrentUser],
+    [setCurrentUser],
   );
 
   const logout = useCallback(async (): Promise<boolean> => {
     setIsAuthenticating(true);
     setAuthenticationError(null);
-    const authenticationResponse = await authenticationClient.signOut();
-    if (!authenticationResponse.success) {
-      setAuthenticationError(authenticationResponse.error ?? 'Unable to sign out.');
-      setIsAuthenticating(false);
+    try {
+      const authenticationResponse = await signOut();
+      if (!authenticationResponse.success) {
+        setAuthenticationError(authenticationResponse.error ?? 'Unable to sign out.');
+        return false;
+      }
+      clearCurrentUser();
+      return true;
+    } catch (error) {
+      setAuthenticationError(error instanceof Error ? error.message : 'Unable to sign out.');
       return false;
+    } finally {
+      setIsAuthenticating(false);
     }
-    clearCurrentUser();
-    setIsAuthenticating(false);
-    return true;
-  }, [authenticationClient, clearCurrentUser]);
+  }, [clearCurrentUser]);
 
   return {
     login,
